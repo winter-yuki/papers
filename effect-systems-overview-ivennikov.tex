@@ -109,30 +109,39 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Server processes the request and resumes expression evaluation with result of the effectful operation.
     So effects differ from pure functions in the following ways:
     \begin{itemize}
-        \item Effect may preserve some information between invocations, so future invocations may depend
+        \item Effect may preserve some information between invocations, so result of invocation may depend on previous one;
+        \item Effect implementation gains control over first-class delimited continuation; % todo cite paper
+        \item Handler implementation may vary on scope of invocation.
     \end{itemize}
 
-    % todo cite effect handlers papers
+    Effects are all about implicitness on term level, that is why it can be so hard to reason about them.
+    At the same time real-world programs are full of effects, that is why static control of their use is crucial as well as some degree of explicitness, e.g.\ in function signatures.
+    Saying specifically, we should be sure that every error is handled somewhere, and every function mutating external state declares that explicitly.
 
+    \begin{minted}{haskell}
+        f :: Int -> Eff (State Int) Int
+    \end{minted}
 
+    % todo eDSL
 
-
-
-
-
-
-
-
+    % todo extensible interpreters
 
     % todo effects
 
 
     \section{Effect systems in general}
 
+    Type systems control shape of input arguments and the shape of function return result.
+    \[\lambda x\ldotp x + 1 : nat\to nat\]
+
+    Originally, first effect system was proposed to discover statically scheduling constraints in parallel programming for expressions with side-effects~\cite{first-effect-system}.
+    They extended type system with effect labels and regions (which describe affected area of store).
 
 
 
     Effect system term was introduced to name
+
+    % todo marriage of effects and monads
 
     % todo Haskell troubles with MTL
 
@@ -187,6 +196,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \bibitem{io} Peyton Jones, Simon L., and Philip Wadler. ``Imperative functional programming.'' \textit{Proceedings of the 20th ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1993.
         \bibitem{eh-mainstream} Chandrasekaran, Sivaramakrishnan Krishnamoorthy, et al. ``Algebraic effect handlers go mainstream (dagstuhl seminar 18172).'' \textit{Dagstuhl reports}. Vol. 8. No. 4. Schloss Dagstuhl-Leibniz-Zentrum fuer Informatik, 2018.
         \bibitem{extensible-effects} Kiselyov, Oleg, Amr Sabry, and Cameron Swords. ``Extensible effects: an alternative to monad transformers.'' \textit{ACM SIGPLAN Notices} 48.12 (2013): 59-70.
+        \bibitem{first-effect-system} Lucassen, John M., and David K. Gifford. ``Polymorphic effect systems.'' \textit{Proceedings of the 15th ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1988.
     \end{thebibliography}
 
 
