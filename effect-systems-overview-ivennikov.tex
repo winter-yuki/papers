@@ -19,6 +19,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \usepackage{minted}
 \setminted{xleftmargin=\parindent, autogobble, escapeinside=??, numberblanklines=false, fontsize=\small}
+\newcommand{\seq}{;~}
 
 \begin{document}
 
@@ -38,22 +39,23 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 
     \begin{abstract}
-        Effect systems allow to statically reason about program effects.
+        Effect systems allow to reason statically about program effects.
         It is essential for building reliable software and clear code abstraction boundaries.
         However, proper effect system design appear to be quite a challenging task.
         Very few mainstream programming languages adopt effect systems and those attempts are known as too complicated or unusable.
 
         At the same time there are a lot of recent papers proposing quite promising approaches to build flexible, safe and lightweight effect systems.
-        This paper aims to give and overview of modern works on this topic to make programming languages designers and implementors more aware of the state of the art.
+        This paper aims to give and overview of selected modern works on this topic to make programming languages designers and implementors more aware of the state of the art.
     \end{abstract}
 
 
     \section{Introduction to effects}
 
-    This section gives brief introduction into computational effects without deep dive into particular approaches of modeling effects.
+    This section gives brief introduction into computational effects without deep dive into particular approaches to effect modeling.
     We hope that it will be enough to provide basic intuition about computational effects and convince that static control of them is a crucial task.
 
     We start taking about effects from the opposite, discussing purity.
+
     The only observable result of a pure computation is a value.
     Function is called pure if its result is the same for the same arguments and its application is a pure computation.
 
@@ -76,8 +78,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Thus there should be a tool for managing complexity, something should take a responsibility of doing bookkeeping for programmer, sweeping unnecessary details under the carpet.
 
     Computational effects is such a tool.
-    Effect is an interaction with computational context, which is responsible for doing bookkeeping for programmer, while computation queries it directly without lots of ceremonies pure code full of.
+    Effect is an interaction with computational context, which is responsible for doing bookkeeping for programmer, while computation queries it directly without lots of ceremonies pure code is full of.
     Such a context can be a language runtime system, providing OS services, mutable memory cells, advanced control mechanisms\ldots
+    Effectful operation is a construct that performs an effect.
 
     \begin{minted}{haskell}
         getList :: Int -> IO [Int]
@@ -89,34 +92,34 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     There are approaches that allow programmers to define custom effects as a library code.
     Namely effect handlers is a promising model that proves itself beyond pure functional languages community~\cite{eh-mainstream}.
-    Example below demonstrates simple state effect implementation.
+%    Example below demonstrates simple state effect implementation.
 
-    \begin{minted}{haskell}
-        data State s comp = Get (s -> comp)
-                          | Put s comp
-        data Eff effs a = Pure a
-                        | Impure (effs (Eff effs a))
-
-        handleState :: Eff (State s) a -> s -> a
-        handleState comp st = case comp of
-          Pure result -> result
-          Impure (Get k) -> handleState (k st) st
-          Impure (Put newSt k) -> handleState k newSt
-    \end{minted}
+%    \begin{minted}{haskell}
+%        data State s comp = Get (s -> comp)
+%                          | Put s comp
+%        data Eff effs a = Pure a
+%                        | Impure (effs (Eff effs a))
+%
+%        handleState :: Eff (State s) a -> s -> a
+%        handleState comp st = case comp of
+%          Pure result -> result
+%          Impure (Get k) -> handleState (k st) st
+%          Impure (Put newSt k) -> handleState k newSt
+%    \end{minted}
 
     Moreover, effect handlers separate effect signatures and implementation, making nature of effects more clear.
-    Expressions can be seen as clients that either are evaluated to pure result or to request to the server (execution context)~\cite{extensible-effects}.
+    Expressions can be seen as clients that either are evaluated to pure result or to request to the server (execution context, effect handler)~\cite{extensible-effects}.
     Server processes the request and resumes expression evaluation with result of the effectful operation.
-    So effects differ from pure functions in the following ways:
+    So effectful operations differ from pure functions in the following ways:
     \begin{itemize}
-        \item Effect may preserve some information between invocations, so result of invocation may depend on previous one;
-        \item Effect implementation gains control over first-class delimited continuation; % todo cite paper
-        \item Handler implementation may vary on scope of invocation.
+        \item Effectful operation implementation may preserve some state between invocations, so previous invocations may affect next ones;
+        \item Effectful operation may take control over first-class delimited continuation of the call-site (e.g.\ to be able to feature cooperative concurrency);
+        \item Semantics of effecful operation is defined in a particular scope of an effect handler, operation may have different semantics in different scopes.
     \end{itemize}
 
     Effects are all about implicitness on term level, that is why it can be so hard to reason about them.
     At the same time real-world programs are full of effects, that is why static control of their use is crucial as well as some degree of explicitness, e.g.\ in function signatures.
-    Saying specifically, we should be sure that every error is handled somewhere, and every function mutating external state declares that explicitly.
+    Saying specifically, we should able to be sure that every exception is handled somewhere, and every function, mutating external state, declares that explicitly.
 
     \begin{minted}{haskell}
         f :: Int -> Eff (State Int) Int
@@ -131,21 +134,25 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Effect systems in general}
 
-    Type systems control shape of input arguments and the shape of function return result.
+    Type systems control shape of input arguments and function return result.
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
-    Originally, first effect system was proposed to discover statically scheduling constraints in parallel programming for expressions with side-effects~\cite{first-effect-system}.
+    At the same time we want to track what function does when running, specifically what effects it might perform while executing.
+    For example, it may look like this, assuming that operation $op$ performs effect $e$:
+    \[\lambda x\ldotp op(x)\seq x + 1 : nat\to^e nat\]
+
+    Originally, first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side-effects~\cite{first-effect-system}.
     They extended type system with effect labels and regions (which describe affected area of store).
 
+    Wadler and Thiemann showed~\cite{marriage} that early effect systems like~\cite{first-effect-system} can be subsumed by programming with monads~\cite{monads}.
+    We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers}.
 
-
-    Effect system term was introduced to name
-
-    % todo marriage of effects and monads
 
     % todo Haskell troubles with MTL
 
     % todo prove external purity
+
+    % todo typing delimited continuations
 
     % todo
 
@@ -197,6 +204,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \bibitem{eh-mainstream} Chandrasekaran, Sivaramakrishnan Krishnamoorthy, et al. ``Algebraic effect handlers go mainstream (dagstuhl seminar 18172).'' \textit{Dagstuhl reports}. Vol. 8. No. 4. Schloss Dagstuhl-Leibniz-Zentrum fuer Informatik, 2018.
         \bibitem{extensible-effects} Kiselyov, Oleg, Amr Sabry, and Cameron Swords. ``Extensible effects: an alternative to monad transformers.'' \textit{ACM SIGPLAN Notices} 48.12 (2013): 59-70.
         \bibitem{first-effect-system} Lucassen, John M., and David K. Gifford. ``Polymorphic effect systems.'' \textit{Proceedings of the 15th ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1988.
+        \bibitem{marriage} Wadler, Philip, and Peter Thiemann. ``The marriage of effects and monads.'' \textit{ACM Transactions on Computational Logic (TOCL)} 4.1 (2003): 1-32.
+        \bibitem{monads} Moggi, Eugenio. \textit{Computational lambda-calculus and monads}. University of Edinburgh, Department of Computer Science, Laboratory for Foundations of Computer Science, 1988.
+        \bibitem{transformers} Liang, Sheng, Paul Hudak, and Mark Jones. ``Monad transformers and modular interpreters.'' \textit{Proceedings of the 22nd ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1995.
     \end{thebibliography}
 
 
