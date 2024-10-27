@@ -62,7 +62,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Programming with pure functions is usually considered as a good practice, because it enjoys a lot of good properties.
     E.g.\ composition of pure functions gives pure function, code semantics appears to be clear and type systems work well for such functions providing partial specification, safety and clarity of abstraction.
 
-    However, it is quite complicated to write and support any non-trivial application or library using only pure computations.
+    However, it is quite complicated to write and support any non-trivial program using only pure computations.
     No matter that even IO can be modeled with explicit parameter passing~\cite{io}.
 
     \begin{minted}{haskell}
@@ -78,7 +78,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Thus there should be a tool for managing complexity, something should take a responsibility of doing bookkeeping for programmer, sweeping unnecessary details under the carpet.
 
     Computational effects is such a tool.
-    Effect is an interaction with computational context, which is responsible for doing bookkeeping for programmer, while computation queries it directly without lots of ceremonies pure code is full of.
+    Effect arise from interaction with computational context, which is responsible for doing bookkeeping for programmer, while computation queries it directly without lots of ceremonies pure code is full of.
     Such a context can be a language runtime system, providing OS services, mutable memory cells, advanced control mechanisms\ldots
     Effectful operation is a construct that performs an effect.
 
@@ -91,7 +91,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     There are approaches that allow programmers to define custom effects as a library code.
-    Namely effect handlers is a promising model that proves itself beyond pure functional languages community~\cite{eh-mainstream}.
+    Namely effect handlers is a promising effect model that proves itself beyond pure functional languages community~\cite{eh-mainstream}.
 %    Example below demonstrates simple state effect implementation.
 
 %    \begin{minted}{haskell}
@@ -110,29 +110,48 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Moreover, effect handlers separate effect signatures and implementation, making nature of effects more clear.
     Expressions can be seen as clients that either are evaluated to pure result or to request to the server (execution context, effect handler)~\cite{extensible-effects}.
     Server processes the request and resumes expression evaluation with result of the effectful operation.
-    So effectful operations differ from pure functions in the following ways:
-    \begin{itemize}
-        \item Effectful operation implementation may preserve some state between invocations, so previous invocations may affect next ones;
-        \item Effectful operation may take control over first-class delimited continuation of the call-site (e.g.\ to be able to feature cooperative concurrency);
-        \item Semantics of effecful operation is defined in a particular scope of an effect handler, operation may have different semantics in different scopes.
-    \end{itemize}
+    Handler defines a scope in which specific effect operations are possible, it interprets them to pure value and effects of the enclosing scope.
+    \begin{minted}{haskell}
+        handleState :: Eff (State s :+: effs) a
+                    -> s -> Eff effs (s, a)
+    \end{minted}
+%    So effectful operations differ from pure functions in the following ways:
+%    \begin{itemize}
+%        \item Effectful operation implementation may preserve some state between invocations, so previous invocations may affect next ones;
+%        \item Effectful operation may take control over first-class delimited continuation of the call-site (e.g.\ to be able to feature cooperative concurrency);
+%        \item Semantics of effecful operation is defined in a particular scope of an effect handler, operation may have different semantics in different scopes.
+%    \end{itemize}
+
+    Custom effects is essentially a tool for creating embedded domain specific languages (eDSL).
+    For example, one could define a coroutine effect that implements specific scheduling strategy and then use it as if coroutine feature was built in a host language itself.
+    In perspective a host language could have only native custom effect model support having all other features implemented as a eDSL libraries.
+    Different effect models compete in flexibility, expressiveness and ease of composing different effects together, defined separately~\cite{transformers, extensible-effects, hoe}.
+
+    % todo link to coroutines via effect handlers
+
+    % todo replace with some examples
+
+    % todo workout custom effect model
 
     Effects are all about implicitness on term level, that is why it can be so hard to reason about them.
     At the same time real-world programs are full of effects, that is why static control of their use is crucial as well as some degree of explicitness, e.g.\ in function signatures.
     Saying specifically, we should able to be sure that every exception is handled somewhere, and every function, mutating external state, declares that explicitly.
+    Without effect system it is impossible to define clear functional abstractions in impure languages, because implementation details leak unnoticed as context interactions.
 
     \begin{minted}{haskell}
         f :: Int -> Eff (State Int) Int
     \end{minted}
 
-    % todo eDSL
-
-    % todo extensible interpreters
-
-    % todo effects
-
-
     \section{Effect systems in general}
+
+
+
+
+
+
+
+
+
 
     Type systems control shape of input arguments and function return result.
     \[\lambda x\ldotp x + 1 : nat\to nat\]
@@ -145,7 +164,13 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     They extended type system with effect labels and regions (which describe affected area of store).
 
     Wadler and Thiemann showed~\cite{marriage} that early effect systems like~\cite{first-effect-system} can be subsumed by programming with monads~\cite{monads}.
-    We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers}.
+    We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers, extensible-effects, hoe}.
+
+    The most important property of an effect system is effect safety --- all effects should be eventually handled.
+    E.g.\ every exception will find its catch.
+
+
+
 
 
     % todo Haskell troubles with MTL
@@ -207,6 +232,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \bibitem{marriage} Wadler, Philip, and Peter Thiemann. ``The marriage of effects and monads.'' \textit{ACM Transactions on Computational Logic (TOCL)} 4.1 (2003): 1-32.
         \bibitem{monads} Moggi, Eugenio. \textit{Computational lambda-calculus and monads}. University of Edinburgh, Department of Computer Science, Laboratory for Foundations of Computer Science, 1988.
         \bibitem{transformers} Liang, Sheng, Paul Hudak, and Mark Jones. ``Monad transformers and modular interpreters.'' \textit{Proceedings of the 22nd ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1995.
+        \bibitem{hoe} van den Berg, Birthe, and Tom Schrijvers. ``A framework for higher-order effects \& handlers.'' \textit{Science of Computer Programming} 234 (2024): 103086.
     \end{thebibliography}
 
 
