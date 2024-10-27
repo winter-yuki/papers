@@ -142,42 +142,52 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         f :: Int -> Eff (State Int) Int
     \end{minted}
 
+
     \section{Effect systems in general}
-
-
-
-
-
-
-
-
-
 
     Type systems control shape of input arguments and function return result.
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
     At the same time we want to track what function does when running, specifically what effects it might perform while executing.
-    For example, it may look like this, assuming that operation $op$ performs effect $e$:
-    \[\lambda x\ldotp op(x)\seq x + 1 : nat\to^e nat\]
+    For example, it may look like the following:
+    \[\lambda x\ldotp print(x)\seq x + 1 : nat\to^{print} nat\]
+
+    Let us outline desired properties that good effect system should satisfy.
+    However, many effect systems compromise some of this properties for simplicity.
+
+    The most important property of an effect system is effect safety.
+    Every effect can only be performed in a context, which supports it.
+    E.g.\ every exception will be caught (every effect handled).
+
+    Effect system should also guarantee effect encapsulation~\cite{encapsulation}.
+    No effects should be handled accidentally without explicit declaration.
+    Imagine higher order function that throws and catches exceptions for it's internal purposes.
+    Without effect system, such a function is able to catch exception from parameter function invocation, while user expects it being propagated to the call-site (nothing made him think other way).
+    Effect system better prevent such situations from happen silently.
+    \begin{minted}{kotlin}
+        fun withContent(f: (String) -> Unit) =
+            try {
+                val content = readFile(path)
+                f(content) // can throw
+                deleteFile(path)
+            } catch (e: FileException) {}
+    \end{minted}
+
+    Finally, there should be a way to prove external purity of a function.
+    Namely some effects are used inside and do not affect externally observable behavior, so function is pure with respect to such effects.
+    At the same time, some other effects may be still observable from outside, so function should preserve them in signature.
+    In other words, there should be a way to express negation of effects.
+    For example the following function in a Koka language catches exceptions of provided computation, propagating other effects unchanged:
+    \[catch : \forall \mu\ap a\ldotp (unit\to^{\{exn|\mu\}} a, exception \to^{\mu} a) \to^\mu a\]
 
     Originally, first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side-effects~\cite{first-effect-system}.
     They extended type system with effect labels and regions (which describe affected area of store).
-
-    Wadler and Thiemann showed~\cite{marriage} that early effect systems like~\cite{first-effect-system} can be subsumed by programming with monads~\cite{monads}.
-    We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers, extensible-effects, hoe}.
-
-    The most important property of an effect system is effect safety --- all effects should be eventually handled.
-    E.g.\ every exception will find its catch.
-
-
-
-
-
-    % todo Haskell troubles with MTL
-
-    % todo prove external purity
+    Later Wadler and Thiemann showed~\cite{marriage} that early effect systems like~\cite{first-effect-system} can be subsumed by programming with monads~\cite{monads}.
+    We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers, extensible-effects}.
 
     % todo typing delimited continuations
+
+    % todo history
 
     % todo
 
@@ -233,6 +243,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \bibitem{monads} Moggi, Eugenio. \textit{Computational lambda-calculus and monads}. University of Edinburgh, Department of Computer Science, Laboratory for Foundations of Computer Science, 1988.
         \bibitem{transformers} Liang, Sheng, Paul Hudak, and Mark Jones. ``Monad transformers and modular interpreters.'' \textit{Proceedings of the 22nd ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1995.
         \bibitem{hoe} van den Berg, Birthe, and Tom Schrijvers. ``A framework for higher-order effects \& handlers.'' \textit{Science of Computer Programming} 234 (2024): 103086.
+        \bibitem{encapsulation} Lindley, Sam. ``Encapsulating effects.'' \textit{Dagstuhl Reports, Volume 8, Issue 4}. 2018.
     \end{thebibliography}
 
 
