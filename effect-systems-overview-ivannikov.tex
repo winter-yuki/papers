@@ -144,17 +144,19 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Without effect system it is impossible to define clear functional abstractions in impure languages, because implementation details leak unnoticed as context interactions.
 
+
     \section{Effect systems in general}
 
     Type systems control shape of input arguments and function return result.
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
-    At the same time we want to track what function does when running, specifically what effects it might perform while executing.
+    At the same time we want to track what function does when running, specifically what effects it might perform.
+    Since in call-by-value languages effects may arise only with function application, we could annotate arrow type with effect label.
     For example, it may look like the following:
-    \[\lambda x\ldotp print(x)\seq x + 1 : nat\to^{print} nat\]
+    \[\lambda x\ldotp print \ap x\seq x + 1 : nat\to^{print} nat\]
 
     Let us outline desired properties that good effect system should satisfy.
-    However, many effect systems compromise some of them for simplicity.
+    However, many effect systems compromise some of them for the sake of simplicity.
 
     The most important property of an effect system is effect safety.
     Every effect can only be performed in a context, which supports it.
@@ -164,7 +166,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     No effects should be handled accidentally without explicit declaration.
     Imagine higher order function that throws and catches exceptions for it's internal purposes.
     Without effect system, such a function is able to catch exception from parameter function invocation, while user expects it being propagated to the call-site (nothing made him think other way).
-    Effect system better prevent such situations from happen silently.
+    Effect system better prevent such situations from happen.
     \begin{minted}{kotlin}
         fun withContent(f: (String) -> Unit) =
             try {
@@ -174,58 +176,68 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
             } catch (e: FileException) {}
     \end{minted}
 
+    One function may perform many effects, so there should be a way to list all of them in the type level in an unordered way.
+    It is helpful to have such a effect label pack type to be a first-class type in a language to be able, for example, to create synonyms.
+
+    TODO effect polymorphism % todo
+
     Effect system should provide a way to prove external purity of a function.
     Namely some effects are used inside and do not affect externally observable behavior, so function is pure with respect to such effects.
     At the same time, some other effects may be still observable from outside, so function should preserve them in signature.
     In other words, there should be a way to express negation on effects.
-    For example the following function in a Koka language catches exceptions of provided computation, propagating other effects unchanged (syntax will be discussed in details later):
+    For example the following function in a Koka language~\cite{koka} catches exceptions of provided computation, propagating other effects unchanged (syntax will be discussed in details later):
     \[catch : \forall \mu\ap a\ldotp (unit\to^{\{exn|\mu\}} a, exception \to^{\mu} a) \to^\mu a\]
+
+    Finally, there should be a way to use an effectful function in more permissive context then it requires.
+    It is an important property for flexibility and convenience, also it do not compromise safety.
+    So there should something like subtyping on effect types.
 
     Originally, first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side-effects~\cite{first-effect-system}.
     They extended type system with effect labels and regions (which describe affected area of store).
     Later Wadler and Thiemann showed~\cite{marriage} that early effect systems like~\cite{first-effect-system} can be subsumed by programming with monads~\cite{monads}.
     We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers, extensible-effects}.
 
-    % todo typing delimited continuations
+    TODO typing delimited continuations % todo
 
-    % todo history
+    TODO more history % todo
 
-    % todo challenges of effect systems by Odersky, first-class
+    There are a lot of advanced effect systems proposed and implemented in a literature.
+    However, most of them simply lack usability and flexibility~\cite{scoped-capabilities}.
+    In this overview we concentrate on designs that were supposed to be practical rather that very expressive and advanced.
 
-    % todo subtyping
-
-    % todo
+    TODO challenges of ES design % todo
 
 
     \section{Row-based systems}
 
-    Row-based effect systems use row types track computational effects.
+    Row-based effect systems use row types to track computational effects.
     Row type is an unordered pack of labels.
-    Some implementations distinguish duplicated labels, some --- not.
-    For example, the following function in System F extended with rows performs two effects, enumerated in type:
+    Some implementations distinguish duplicated labels~\cite{koka}, some --- not~\cite{links}.
+    For example, the following function in System F, extended with rows, performs two effects, listed in type:
     \begin{multline*}
         \Lambda a\ldotp\lambda xs\ldotp map \ap (\lambda x\ldotp print\ap x\seq yield\ap x) \ap xs \\ : \forall a \ldotp list\ap a \to^{\{print, yield \ap a\}} list \ap unit
     \end{multline*}
 
     Higher order functions produce at least the same effects as argument functions do.
-    To express that row polymorphism is needed,
-    Let type variables denote row types as well, then it might look like this:
+    To express that row polymorphism is needed.
+    Let type variables stand for row types as well.
+    Row variables can be spliced in a row type.
     \begin{multline*}
-        printMap = \Lambda \mu \ap a \ap b\ldotp \lambda f\ap xs\ldotp \ldots \\ : \forall \mu \ap a \ap b\ldotp (a \to^\mu b) \to list \ap a \to^{\{print|\mu\}} list \ap b
+        printMap : \forall \mu \ap a \ap b\ldotp (a \to^\mu b) \to list \ap a \to^{\{print|\mu\}} list \ap b
     \end{multline*}
+
+    % todo cite row polymorphism
 
     q\cite{koka}\cite{links}
 
     There is a famous example of row-based effect system in Java programming language --- checked exceptions.
     Some exceptions in exception hierarchy are called checked and Java statically verifies that they are caught.
-    So programmer should either catch checked exception or say explicitly in method signature that a particular exception type should be dealt with on call-site.
+    So programmer should either catch checked exception or say explicitly in method signature that a particular exception type should be dealt with on a call-site.
+
 
     Checked exceptions is famously unliked feature by practical programmers for their
 
     % todo link about checked exceptions unliked
-
-
-
 
 
     % todo Java
@@ -277,6 +289,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \bibitem{encapsulation} Lindley, Sam. ``Encapsulating effects.'' \textit{Dagstuhl Reports, Volume 8, Issue 4}. 2018.
         \bibitem{links} Hillerström, Daniel, and Sam Lindley. ``Liberating effects with rows and handlers.'' \textit{Proceedings of the 1st International Workshop on Type-Driven Development}. 2016.
         \bibitem{koka} Leijen, Daan. ``Koka: Programming with row polymorphic effect types.'' \textit{arXiv preprint arXiv:1406.2061} (2014).
+        \bibitem{scoped-capabilities} Odersky, Martin, et al. ``Scoped capabilities for polymorphic effects.'' \textit{arXiv preprint arXiv:2207.03402} (2022).
     \end{thebibliography}
 
 
