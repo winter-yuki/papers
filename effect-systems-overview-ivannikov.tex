@@ -171,24 +171,26 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Lately we will see different concrete solutions for syntax and semantics of effect types.
     \[\lambda x\ldotp print \ap x\seq x + 1 : nat\to^{print} nat\]
 
+    Saying precisely, effects are tracked by the type system for each term, but only for abstraction effects present explicitly in type.
+    It is so because in call-by-value language abstraction is the only way for delaying computations from being evaluated immediately.
+    Such delayed computation can be passed around, potentially escaping original computational context.
+    So analysis becomes dataflow-sensitive and it is much easier to track effects explicitly, providing user some control and flexibility.
+    We will return to this problem in upcoming sections~\ref{sec:capabilities} and~\ref{sec:modal}.
 
-
-
-
-    Let us outline desired properties that good effect system should satisfy.
-    However, many effect systems compromise some of them for the sake of simplicity.
+    Let us outline main desired properties of effect systems for future accurate discussion.
+    Many effect systems compromise some of them for the sake of simplicity.
 
     The most important property of an effect system is effect safety.
     Every effect can only be performed in a context, which supports it.
-    E.g.\ every exception will be caught (every effect handled).
+    Specifically, every exception should be caught, or generally, every effect handled.
+    Safety implies that no effect should ever be forgotten by the type system: if a function may perform some effect, it should mention it in its type.
 
-    % todo consequence - never loose information
-
-    Effect system should also guarantee effect encapsulation~\cite{encapsulation}.
-    No effects should be handled accidentally without explicit declaration.
+    Another important property is effect encapsulation~\cite{encapsulation} guarantee.
+    I.e.\ no effects should be handled accidentally without explicit declaration.
     Imagine higher order function that throws and catches exceptions for it's internal purposes.
     Without effect system, such a function is able to catch exception from parameter function invocation, while user expects it being propagated to the call-site (nothing made him think other way).
-    Effect system better prevent such situations from happen.
+    Effect system better prevent such situations from happening, e.g.\ by requiring some explicit signal in the signature.
+    For example, the following Kotlin function will silently intercept \mintinline{kotlin}|FileException| thrown in \texttt{f}.
     \begin{minted}{kotlin}
         fun withContent(f: (String) -> Unit) =
             try {
@@ -197,6 +199,22 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
                 deleteFile(path)
             } catch (e: FileException) {}
     \end{minted}
+
+    Effects are inherently transitive along the edges of the dynamic call-graph, i.e.\ a function’s effects include the effects of all the functions it calls, transitively~\cite{scoped-capabilities}.
+    This observation highlights the most challenging aspect of system's usability in practice.
+    So an effect system should answer this challenge somehow.
+    Some of possible solutions are:
+    \begin{itemize}
+        \item Allow to simply list effect labels in type;
+        \item Make effect labels list unordered for reusability;
+        \item Make effect labels list first-class type to support effect polymorphism for higher order functions and synonym declarations.
+    \end{itemize}
+
+
+
+
+
+    % todo effect inference
 
     One function may perform many effects, so there should be a way to list all of them in the type level in an unordered way.
     It is helpful to have such a effect label pack type to be a first-class type in a language to be able, for example, to create synonyms.
@@ -282,7 +300,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     % todo change row syntax to koka like
 
 
-    \section{Systems based on capabilities}
+    \section{Systems based on capabilities} \label{sec:capabilities}
 
 
 
@@ -310,7 +328,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     % todo capability-based effect systems
 
 
-    \section{Modal effect types}
+    \section{Modal effect types} \label{sec:modal}
 
     % todo modal-based effect sytems
 
