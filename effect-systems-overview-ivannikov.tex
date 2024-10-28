@@ -230,14 +230,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     % todo cite row polymorphism (on records)
 
-    % todo effect encapsulation
+    TODO effect encapsulation % todo
 
+    TODO effect negation % todo
 
-    % todo effect negation
-
-    % todo subeffecting and inference
-
-    % todo rows in Java
+    TODO subeffecting and inference % todo
 
     There is a famous example of row-based effect system in Java~\cite{java} programming language --- checked exceptions.
     Some exceptions in exception hierarchy are called checked and Java statically verifies that they are caught.
@@ -261,8 +258,24 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Effect handler libraries in Haskell also use type classes to express open unions similarly to row-types~\cite{alacarte}.
     Another approach is to emulate row types with intersection types as Scala ZIO\footnote{\url{https://zio.dev/}} library does.
 
+    % todo change row syntax to koka like
+
 
     \section{Systems based on capabilities}
+
+    Previously we used to see effects as calls of ``special'' functions, e.g. \texttt{print}.
+    We tracked such functions using row types, simply placing their names (or type applications) there.
+    \[\lambda x\ldotp \underline{print}\ap x;~f\ap x + 1 : nat \to^{\{print\}} nat\]
+
+    Now we are going to look on effects from a little bitt different point of view.
+    \[\lambda x\ldotp \underline{console}.print\ap x;~f\ap x + 1 : nat \to^{\{console\}} nat\]
+
+    \[\lambda \underline{console} \ap x \ldotp console.print\ap x;~f\ap x + 1 : \underline{console} \to nat \to nat\]
+
+    % todo dynamic binding
+
+    \[map = \Lambda a \ap b\ldotp \lambda f\ap xs\ldotp \ldots : \forall \ap a \ap b\ldotp \underline{(a \to b)} \to list \ap a \to list \ap b \]
+
 
     % todo Kotlin
 
