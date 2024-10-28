@@ -150,25 +150,30 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Effect systems in general}
 
-    In this section we are going to describe basic idea under all effect systems, outline core properties to use them later to describe and compare of different effect systems.
+    In this section we are going to describe basic idea under all effect systems, outline core properties to use them later to describe and compare different effect systems.
     Finally, we sketch main challenges of effect systems design and conclude with brief historical notes.
 
     To explain general ideas we will use informal notation based on System F, extended with needed constructs.
-    We will explain these constructs along the way.
+    These constructs will be explained along the way.
 
+    We consider only call-by-value languages, because call-by-name languages are less wide spread and results of interest can usually be adopted to monadic setting~\cite{marriage}.
+    It means that effects may arise only from function applications because values are unlifted and monads are not needed for sequencing, we are can use direct-style effects.
 
+    Classical type systems control shape input arguments and function return result.
+    Specifically, we are able to say that function maps naturals to naturals:
 
-
-
-
-
-    Type systems control shape of input arguments and function return result.
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
-    At the same time we want to track what function does when running, specifically what effects it might perform.
-    Since in call-by-value languages effects may arise only with function application, we can annotate arrow type with effect label.
-    For example, it may look like the following:
+    However, as we discussed before, tracking only pure aspect of computations is not enough.
+    We would like to track also what function goes when running, how it interacts with execution context, what effects it might perform.
+    Since functions are the only unevaluated computations in call-by-value language, it is natural to carry information about effects with arrow type.
+    For example, we can attach effect label to the arrow itself.
+    Lately we will see different concrete solutions for syntax and semantics of effect types.
     \[\lambda x\ldotp print \ap x\seq x + 1 : nat\to^{print} nat\]
+
+
+
+
 
     Let us outline desired properties that good effect system should satisfy.
     However, many effect systems compromise some of them for the sake of simplicity.
@@ -176,6 +181,8 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     The most important property of an effect system is effect safety.
     Every effect can only be performed in a context, which supports it.
     E.g.\ every exception will be caught (every effect handled).
+
+    % todo consequence - never loose information
 
     Effect system should also guarantee effect encapsulation~\cite{encapsulation}.
     No effects should be handled accidentally without explicit declaration.
