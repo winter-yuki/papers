@@ -20,6 +20,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{minted}
 \setminted{xleftmargin=\parindent, autogobble, escapeinside=??, numberblanklines=false, fontsize=\small}
 \newcommand{\seq}{;~}
+\newcommand{\ap}{~}
 
 \begin{document}
 
@@ -129,19 +130,19 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     % todo link to coroutines via effect handlers
 
-    % todo replace with some examples
+    % todo link to effect handlers Handling algebraic effects
 
     % todo workout custom effect model
 
     Effects are all about implicitness on term level, that is why it can be so hard to reason about them.
     At the same time real-world programs are full of effects, that is why static control of their use is crucial as well as some degree of explicitness, e.g.\ in function signatures.
     Saying specifically, we should able to be sure that every exception is handled somewhere, and every function, mutating external state, declares that explicitly.
-    Without effect system it is impossible to define clear functional abstractions in impure languages, because implementation details leak unnoticed as context interactions.
 
     \begin{minted}{haskell}
         f :: Int -> Eff (State Int) Int
     \end{minted}
 
+    Without effect system it is impossible to define clear functional abstractions in impure languages, because implementation details leak unnoticed as context interactions.
 
     \section{Effect systems in general}
 
@@ -153,7 +154,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \[\lambda x\ldotp print(x)\seq x + 1 : nat\to^{print} nat\]
 
     Let us outline desired properties that good effect system should satisfy.
-    However, many effect systems compromise some of this properties for simplicity.
+    However, many effect systems compromise some of them for simplicity.
 
     The most important property of an effect system is effect safety.
     Every effect can only be performed in a context, which supports it.
@@ -173,11 +174,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
             } catch (e: FileException) {}
     \end{minted}
 
-    Finally, there should be a way to prove external purity of a function.
+    Effect system should provide a way to prove external purity of a function.
     Namely some effects are used inside and do not affect externally observable behavior, so function is pure with respect to such effects.
     At the same time, some other effects may be still observable from outside, so function should preserve them in signature.
-    In other words, there should be a way to express negation of effects.
-    For example the following function in a Koka language catches exceptions of provided computation, propagating other effects unchanged:
+    In other words, there should be a way to express negation on effects.
+    For example the following function in a Koka language catches exceptions of provided computation, propagating other effects unchanged (syntax will be discussed in details later):
     \[catch : \forall \mu\ap a\ldotp (unit\to^{\{exn|\mu\}} a, exception \to^{\mu} a) \to^\mu a\]
 
     Originally, first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side-effects~\cite{first-effect-system}.
@@ -189,15 +190,45 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     % todo history
 
+    % todo challenges of effect systems by Odersky, first-class
+
+    % todo subtyping
+
     % todo
 
 
     \section{Row-based systems}
 
-    % todo Java
+    Row-based effect systems use row types track computational effects.
+    Row type is an unordered pack of labels.
+    Some implementations distinguish duplicated labels, some --- not.
+    For example, the following function in System F extended with rows performs two effects, enumerated in type:
+    \begin{multline*}
+        \Lambda a\ldotp\lambda xs\ldotp map \ap (\lambda x\ldotp print\ap x\seq yield\ap x) \ap xs \\ : \forall a \ldotp list\ap a \to^{\{print, yield \ap a\}} list \ap unit
+    \end{multline*}
 
-    The most classical approach is row-based.
-    Special row-types are used to delimit computational effects.
+    Higher order functions produce at least the same effects as argument functions do.
+    To express that row polymorphism is needed,
+    Let type variables denote row types as well, then it might look like this:
+    \begin{multline*}
+        printMap = \Lambda \mu \ap a \ap b\ldotp \lambda f\ap xs\ldotp \ldots \\ : \forall \mu \ap a \ap b\ldotp (a \to^\mu b) \to list \ap a \to^{\{print|\mu\}} list \ap b
+    \end{multline*}
+
+    q\cite{koka}\cite{links}
+
+    There is a famous example of row-based effect system in Java programming language --- checked exceptions.
+    Some exceptions in exception hierarchy are called checked and Java statically verifies that they are caught.
+    So programmer should either catch checked exception or say explicitly in method signature that a particular exception type should be dealt with on call-site.
+
+    Checked exceptions is famously unliked feature by practical programmers for their
+
+    % todo link about checked exceptions unliked
+
+
+
+
+
+    % todo Java
 
     % todo row-based effect systems
 
@@ -226,10 +257,10 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     % todo conclusion
 
 
-    \section*{Acknowledgment}
-
-    I would like to thank Mikhail Belyaev and Denis Moskvin for discussion and lots of helpful comments.
-    Also I'm grateful to Huawei Corporation for funding this work.
+%    \section*{Acknowledgment}
+%
+%    I would like to thank Mikhail Belyaev and Denis Moskvin for discussion and lots of helpful comments.
+%    Also I'm grateful to Huawei Corporation for funding this work.
 
     % todo acknoledgement
 
@@ -244,6 +275,8 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \bibitem{transformers} Liang, Sheng, Paul Hudak, and Mark Jones. ``Monad transformers and modular interpreters.'' \textit{Proceedings of the 22nd ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1995.
         \bibitem{hoe} van den Berg, Birthe, and Tom Schrijvers. ``A framework for higher-order effects \& handlers.'' \textit{Science of Computer Programming} 234 (2024): 103086.
         \bibitem{encapsulation} Lindley, Sam. ``Encapsulating effects.'' \textit{Dagstuhl Reports, Volume 8, Issue 4}. 2018.
+        \bibitem{links} Hillerström, Daniel, and Sam Lindley. ``Liberating effects with rows and handlers.'' \textit{Proceedings of the 1st International Workshop on Type-Driven Development}. 2016.
+        \bibitem{koka} Leijen, Daan. ``Koka: Programming with row polymorphic effect types.'' \textit{arXiv preprint arXiv:1406.2061} (2014).
     \end{thebibliography}
 
 
