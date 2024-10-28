@@ -19,6 +19,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \usepackage{minted}
 \setminted{xleftmargin=\parindent, autogobble, escapeinside=??, numberblanklines=false, fontsize=\small}
+\usepackage{hyperref}
 \newcommand{\seq}{;~}
 \newcommand{\ap}{~}
 
@@ -151,7 +152,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
     At the same time we want to track what function does when running, specifically what effects it might perform.
-    Since in call-by-value languages effects may arise only with function application, we could annotate arrow type with effect label.
+    Since in call-by-value languages effects may arise only with function application, we can annotate arrow type with effect label.
     For example, it may look like the following:
     \[\lambda x\ldotp print \ap x\seq x + 1 : nat\to^{print} nat\]
 
@@ -210,10 +211,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Row-based systems}
 
-    Row-based effect systems use row types to track computational effects.
+    Row-based effect systems seem to be the most straight-forward approach.
+    They use row types to track computational effects.
     Row type is an unordered pack of labels.
     Some implementations distinguish duplicated labels~\cite{koka}, some --- not~\cite{links}.
-    For example, the following function in System F, extended with rows, performs two effects, listed in type:
+    For example, the following function in System F, extended with row types, performs two effects, listed in type:
     \begin{multline*}
         \Lambda a\ldotp\lambda xs\ldotp map \ap (\lambda x\ldotp print\ap x\seq yield\ap x) \ap xs \\ : \forall a \ldotp list\ap a \to^{\{print, yield \ap a\}} list \ap unit
     \end{multline*}
@@ -226,25 +228,38 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         printMap : \forall \mu \ap a \ap b\ldotp (a \to^\mu b) \to list \ap a \to^{\{print|\mu\}} list \ap b
     \end{multline*}
 
-    % todo cite row polymorphism
+    % todo cite row polymorphism (on records)
 
-    q\cite{koka}\cite{links}
+    % todo effect encapsulation
 
-    There is a famous example of row-based effect system in Java programming language --- checked exceptions.
+
+    % todo effect negation
+
+    % todo subeffecting and inference
+
+    % todo rows in Java
+
+    There is a famous example of row-based effect system in Java~\cite{java} programming language --- checked exceptions.
     Some exceptions in exception hierarchy are called checked and Java statically verifies that they are caught.
     So programmer should either catch checked exception or say explicitly in method signature that a particular exception type should be dealt with on a call-site.
 
+    Checked exceptions is famously unliked feature by practical programmers for as they lack flexibility a lot~\cite{checked-exceptions}.
+    Namely, exception row is an ad-hoc construct and user cannot parametrize function with exception row explicitly, while inference do not work for exceptions.
+    Thus it is impossible to write higher order methods that propagate more then one checked exception to the call-site.
 
-    Checked exceptions is famously unliked feature by practical programmers for their
+    \begin{minted}{java}
+        static <A, B, E extends Throwable> List<B>
+            map(List<A> xs, Func<A, B, E> f)
+            throws FileNotFoundException, E {...}
 
-    % todo link about checked exceptions unliked
+        Main.<String, Void, IOException>map(xs,
+            (String s) -> throw new IOException(s))
+    \end{minted}
 
-
-    % todo Java
-
-    % todo row-based effect systems
-
-    % todo open unions emulation
+    There are methods that allow to emulate row types with other language features when they are not supported directly.
+    Haskell famous \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type classes, which constraints are unordered and support subtyping, to emulate row types~\cite{mtl}.
+    Effect handler libraries in Haskell also use type classes to express open unions similarly to row-types~\cite{alacarte}.
+    Another approach is to emulate row types with intersection types as Scala ZIO\footnote{\url{https://zio.dev/}} library does.
 
 
     \section{Systems based on capabilities}
@@ -290,6 +305,13 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \bibitem{links} Hillerström, Daniel, and Sam Lindley. ``Liberating effects with rows and handlers.'' \textit{Proceedings of the 1st International Workshop on Type-Driven Development}. 2016.
         \bibitem{koka} Leijen, Daan. ``Koka: Programming with row polymorphic effect types.'' \textit{arXiv preprint arXiv:1406.2061} (2014).
         \bibitem{scoped-capabilities} Odersky, Martin, et al. ``Scoped capabilities for polymorphic effects.'' \textit{arXiv preprint arXiv:2207.03402} (2022).
+        \bibitem{java} Gosling, James. \textit{The Java language specification}. Addison-Wesley Professional, 2000.
+        \bibitem{mtl} Jones, Mark P. ``Functional programming with overloading and higher-order polymorphism.'' \textit{Advanced
+        Functional Programming: First International Spring School on Advanced
+        Functional Programming Techniques Båstad, Sweden, May 24–30, 1995
+        Tutorial Text 1}. Springer Berlin Heidelberg, 1995.
+        \bibitem{alacarte} Swierstra, Wouter. ``Data types à la carte.'' \textit{Journal of functional programming} 18.4 (2008): 423-436.
+        \bibitem{checked-exceptions} B. Venners, B. Eckel and A. Hejlsberg, ``The Trouble with Checked Exceptions'', Aug. 2003. [Online]. Available \url{https://www.artima.com/articles/the-trouble-with-checked-exceptions}.
     \end{thebibliography}
 
 
