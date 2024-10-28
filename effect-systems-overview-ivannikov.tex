@@ -135,8 +135,6 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     % todo link to effect handlers Handling algebraic effects
 
-    % todo workout custom effect model
-
     Effects are all about implicitness on term level, that is why it can be so hard to reason about them.
     At the same time real-world programs are full of effects, that is why static control of their use is crucial as well as some degree of explicitness, e.g.\ in function signatures.
     Saying specifically, we should able to be sure that every exception is handled somewhere, every function, mutating external state, declares that explicitly.
@@ -206,46 +204,32 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Some of possible solutions are:
     \begin{itemize}
         \item Allow to simply list effect labels in type;
-        \item Make effect labels list unordered for reusability;
-        \item Make effect labels list first-class type to support effect polymorphism for higher order functions and synonym declarations.
+        \item Make effect labels pack unordered for reusability;
+        \item Make effect labels pack first-class type to support effect polymorphism for higher order functions and synonym declarations;
+        \item Provide robust effect types inference.
     \end{itemize}
 
-
-
-
-
-    % todo effect inference
-
-    One function may perform many effects, so there should be a way to list all of them in the type level in an unordered way.
-    It is helpful to have such a effect label pack type to be a first-class type in a language to be able, for example, to create synonyms.
-
-    TODO effect polymorphism % todo
-
     Effect system should provide a way to prove external purity of a function.
-    Namely some effects are used inside and do not affect externally observable behavior, so function is pure with respect to such effects.
-    At the same time, some other effects may be still observable from outside, so function should preserve them in signature.
+    Namely, some effects are used inside and do not affect externally observable behavior, so function is pure with respect to such effects.
+    At the same time, some other effects may still be observable from the outside, so function should preserve them in the signature.
     In other words, there should be a way to express negation on effects.
     For example the following function in a Koka language~\cite{koka} catches exceptions of provided computation, propagating other effects unchanged (syntax will be discussed in details later):
     \[catch : \forall \mu\ap a\ldotp (unit\to^{\{exn|\mu\}} a, exception \to^{\mu} a) \to^\mu a\]
 
     Finally, there should be a way to use an effectful function in more permissive context then it requires.
-    It is an important property for flexibility and convenience, also it do not compromise safety.
-    So there should something like subtyping on effect types.
+    It is an important property for flexibility and convenience without compromising safety.
+    So there should be something like subtyping on effect types.
 
     Originally, first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side-effects~\cite{first-effect-system}.
     They extended type system with effect labels and regions (which describe affected area of store).
     Later Wadler and Thiemann showed~\cite{marriage} that early effect systems like~\cite{first-effect-system} can be subsumed by programming with monads~\cite{monads}.
-    We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers, extensible-effects}.
-
-    TODO typing delimited continuations % todo
+    We are not taking into account this brunch of research because monads proved to be not well composable solution~\cite{transformers, extensible-effects} and they are not necessarily needed to model effects in call-by-value languages.
 
     TODO more history % todo
 
     There are a lot of advanced effect systems proposed and implemented in a literature.
     However, most of them simply lack usability and flexibility~\cite{scoped-capabilities}.
     In this overview we concentrate on designs that were supposed to be practical rather that very expressive and advanced.
-
-    TODO challenges of ES design % todo
 
 
     \section{Row-based systems}
