@@ -157,7 +157,6 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Classical type systems control shape input arguments and function return result.
     Specifically, we are able to say that function maps naturals to naturals:
-
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
     However, as we discussed before, tracking only pure aspect of computations is not enough.
@@ -304,31 +303,30 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Previously we used to see effects as calls of ``special'' functions, e.g. \texttt{print}, and listed corresponding effect labels in types.
     This understanding lead us to quite verbose systems tracking too much information.
-    \[\lambda x\ldotp \underline{print}\ap x;~f\ap x + 1 : nat \to^{\{print\}} nat\]
+    \[\lambda x\ldotp \underline{print}\ap x\seq x + 1 : nat \to^{\{print\}} nat\]
 
     In this section we are going to look on effects tracking from a different point of view.
-    We assume that there are ``special'' objects in a program, called capabilities, they provide an ability to perform particular effects.
-    Thus effect system should track mentioning of such objects.
-    For example, $console$ capability provides us printing (we use syntax with dot to call a method on an object, it can be seen as syntactic sugar for passing first function argument):
+    We assume that there are ``special'' objects in a program --- capabilities.
+    Effects can be performed only through them.
+    Thus effect system should track mentioning of such objects in code.
+    For example, $console$ capability provides us printing ability (we use syntax with dot to use a capability, it can be seen as syntactic sugar for passing first function argument):
     \[\lambda x\ldotp \underline{console}.print\ap x\seq x + 1 : nat \to^{\{console\}} nat\]
 
-    Essentially, effectful functions can be seen as receiving capabilities as arguments.
-    So with capabilities programmers can reason about effects the same way as they reason about bindings.
-    Some systems, as we will see later, track objects by references (using reference-dependent types), some --- by types of capabilities.
+    Functions can receive capabilities as arguments.
+    So with capabilities programmers can reason about effects the same way as they reason about bindings~\cite{brachthauser2022effects}.
+    Some systems, as we will see later, track capability objects by references (using reference-dependent types), some --- by types of capabilities.
     \[\lambda \underline{console} \ap x \ldotp console.print\ap x\seq x + 1 : Console \to nat \to nat\]
 
+    Explicit passing of all capabilities as function arguments is going to be messy.
+    Therefore, languages tend to use implicit parameter passing techniques for this purpose.
+    In this perspective, effect systems can be seen as a tool for tracking free, dynamically bound variables~\cite{odersky2022scoped}.
+    This view complements the picture: type system controls bounded variables, while effect system tracks free ones.
 
 
 
 
 
-%
-%    q
-%
 
-%
-%    % todo dynamic binding
-%
 %    \[map = \Lambda a \ap b\ldotp \lambda f\ap xs\ldotp \ldots : \forall \ap a \ap b\ldotp \underline{(a \to b)} \to list \ap a \to list \ap b \]
 
     % todo resources
