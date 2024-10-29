@@ -338,17 +338,22 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
             throw FileNotFoundException()
         }
 
-        def process()(implicit fe: FileError): Int = {
+        def process()(implicit fe: FileError) = {
           fe.reportNotFound // use the capability
         }
 
         // define scope for the capability
-        def withFileError[R](f: FileError => R): R = {
+        def withFileError[R](f: FileError => R) = {
           try {
             f(FileError())
-          } catch case _: FileNotFoundException => ...
+          } catch case _: FileNotFoundException ...
         }
     \end{minted}
+
+    Unfortunately, capability-based effect systems require some additional efforts to be safe, which complicate them significantly.
+    Thus, the unsafe middle-ground of the discussed programming style with some syntactic language support may seem as a satisfying compromise.
+
+
 
 
     % todo resources
