@@ -353,17 +353,27 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Unfortunately, capability-based effect systems require some additional efforts to be safe, which complicate them significantly.
     Thus, the unsafe middle-ground of the discussed programming style with some syntactic language support may seem as a satisfying compromise.
 
+    Capability-based effect system is safe when it prevents capabilities from leaking out of dedicated scope.
+    Exceptions are the most straight-forward example in this case, they should never be thrown outside the corresponding \mintinline{scala}|try-catch|.
+    However, we can easily leak exception capability using code above:
+    \begin{minted}{scala}
+        withFileError(error => error).reportNotFound
+    \end{minted}
 
+    Similar examples can be obtained for other kinds of effects.
+    E.g.\ mutable state can be allocated on the stack and nobody after end of corresponding function execution should refer to it.
+    Coroutines effect have a lightweight thread start point, until which delimited continuation is reified to be stored.
+    Custom effect of persistent application storage uses file handle, that eventually be invalidated.
+    Here we can see similarity in concepts of resources and capabilities.
 
-
-    % todo resources
-
-    % todo Kotlin
+    q\cite{osvald2016gentrification}\cite{brachthauser2020effects}
 
     % todo capability-based effect systems
 
 
     \section{Modal effect types} \label{sec:modal}
+
+    q\cite{convent2020doo}\cite{tang2024modal}
 
     % todo modal-based effect sytems
 
