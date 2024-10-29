@@ -302,7 +302,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \section{Systems based on capabilities} \label{sec:capabilities}
 
     Previously we used to see effects as calls of ``special'' functions, e.g. \texttt{print}, and listed corresponding effect labels in types.
-    This understanding lead us to quite verbose systems tracking too much information.
+    This understanding lead us to quite verbose systems tracking too much information\footnote{We use underlining for highlighting purposes.}.
     \[\lambda x\ldotp \underline{print}\ap x\seq x + 1 : nat \to^{\{print\}} nat\]
 
     In this section we are going to look on effects tracking from a different point of view.
@@ -317,20 +317,41 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Some systems, as we will see later, track capability objects by references (using reference-dependent types), some --- by types of capabilities.
     \[\lambda \underline{console} \ap x \ldotp console.print\ap x\seq x + 1 : Console \to nat \to nat\]
 
-    Explicit passing of all capabilities as function arguments is going to be messy.
+    Explicit passing of capabilities as function arguments is going to be messy.
     Therefore, languages tend to use implicit parameter passing techniques for this purpose.
     In this perspective, effect systems can be seen as a tool for tracking free, dynamically bound variables~\cite{odersky2022scoped}.
     This view complements the picture: type system controls bounded variables, while effect system tracks free ones.
 
+    Capabilities offer a lightweight alternative to classical effect polymorphism --- contextual effect polymorphism~\cite{brachthauser2022effects}.
+    Capability is needed to perform an effect, but we can silently capture a capability in lambda function and use it there.
+    So we are able to write $map$ function with familiar type without any explicit presence of effect polymorphism (effect safety aspect will be discussed later):
+    \[map = \Lambda a \ap b\ldotp \lambda f\ap xs\ldotp \ldots : \forall \ap a \ap b\ldotp \underline{(a \to b)} \to list \ap a \to list \ap b \]
 
+    Another important aspect of capability-based effect systems is that they can be emulated in languages without built-in support by using a specific style of programming.
+    More precisely, functions should not use global definitions to perform effects, instead they should receive capability objects as parameters (usually called services) and use method calls on them to perform effects.
+    Ideally, if there is some implicit parameter passing feature support.
+    We demonstrate the idea using Scala with implicits feature~\cite{odersky2004scala}.
+    Last time language evolves to native support for the idea~\cite{odersky2021safer}.
+    \begin{minted}{scala}
+        class FileError {
+          def reportNotFound: Nothing =
+            throw FileNotFoundException()
+        }
 
+        def process()(implicit fe: FileError): Int = {
+          fe.reportNotFound // use the capability
+        }
 
+        // define scope for the capability
+        def withFileError[R](f: FileError => R): R = {
+          try {
+            f(FileError())
+          } catch case _: FileNotFoundException => ...
+        }
+    \end{minted}
 
-
-%    \[map = \Lambda a \ap b\ldotp \lambda f\ap xs\ldotp \ldots : \forall \ap a \ap b\ldotp \underline{(a \to b)} \to list \ap a \to list \ap b \]
 
     % todo resources
-
 
     % todo Kotlin
 
