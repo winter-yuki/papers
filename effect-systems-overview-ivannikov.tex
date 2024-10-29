@@ -127,11 +127,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 %    \end{itemize}
 
     Custom effects is essentially a tool for creating embedded domain specific languages (eDSL).
-    For example, one could define a coroutine effect that implements specific scheduling strategy and then use it as if coroutine feature was built in a host language itself.
+    For example, one could define a coroutine effect that implements specific scheduling strategy and then use it as if coroutine feature was built in a host language itself~\cite{coroutines-via-eh}.
     Essentially, a host language could only support custom effects having all other features implemented as a eDSL libraries.
     Different effect models compete in flexibility, expressiveness and ease of composing different effects together, defined separately~\cite{transformers, extensible-effects, hoe}.
-
-    % todo link to coroutines via effect handlers
 
     % todo link to effect handlers Handling algebraic effects
 
@@ -234,24 +232,24 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Row-based systems}
 
-    Row-based effect systems seem to be the most straight-forward approach.
-    They use row types to track computational effects.
+    Row-based effect systems represent all effects of a function with row of effect labels.
+    Labels are simply names of effects (source language may allow many effect operations have the same effect name), maybe applied to type arguments.
     Row type is an unordered pack of labels.
-    Some implementations distinguish duplicated labels~\cite{koka}, some --- not~\cite{links}.
-    For example, the following function in System F, extended with row types, performs two effects, listed in type:
+    For example, the following function in System F, extended with row types, performs two effects, listed in type (we choose neutral syntax with braces for row types):
     \begin{multline*}
-        \Lambda a\ldotp\lambda xs\ldotp map \ap (\lambda x\ldotp print\ap x\seq yield\ap x) \ap xs \\ : \forall a \ldotp list\ap a \to^{\{print, yield \ap a\}} list \ap unit
+        \Lambda a\ldotp\lambda xs\ldotp map \ap (\lambda x\ldotp print\ap x\seq yield\ap x) \ap xs \\ : \forall a \ldotp list\ap a \to^{\{print, ~yield \ap a\}} list \ap unit
     \end{multline*}
 
     Higher order functions produce at least the same effects as argument functions do.
-    To express that row polymorphism is needed.
-    Let type variables stand for row types as well.
-    Row variables can be spliced in a row type.
+    To express that, row-based effect systems use row polymorphism~\cite{row-poly}.
+    I.e.\ type variables can stand for row types as well and they can be spliced in other row types.
+    We use vertical line to say that a row type is extended by row type variable $\mu$:
     \begin{multline*}
         printMap : \forall \mu \ap a \ap b\ldotp (a \to^\mu b) \to list \ap a \to^{\{print|\mu\}} list \ap b
     \end{multline*}
 
-    % todo cite row polymorphism (on records)
+    Note that ideally every higher order function should be parametrized over effects of argument functions.
+    This makes smooth migration to effect system impossible and introduces significant code syntactic pollution, complicating creation of code abstractions.
 
     TODO effect encapsulation % todo
 
@@ -259,13 +257,14 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     TODO subeffecting and inference % todo
 
-    There is a famous example of row-based effect system in Java~\cite{java} programming language --- checked exceptions.
-    Some exceptions in exception hierarchy are called checked and Java statically verifies that they are caught.
-    So programmer should either catch checked exception or say explicitly in method signature that a particular exception type should be dealt with on a call-site.
+    TODO drawbacks of this approach % todo
 
-    Checked exceptions is famously unliked feature by practical programmers for as they lack flexibility a lot~\cite{checked-exceptions}.
-    Namely, exception row is an ad-hoc construct and user cannot parametrize function with exception row explicitly, while inference do not work for exceptions.
-    Thus it is impossible to write higher order methods that propagate more then one checked exception to the call-site.
+    There is a famous example of row-based effect system in Java~\cite{java} --- checked exceptions.
+    Java statically verifies that all checked exceptions are caught --- programmer should either catch checked exception or declare explicitly in a method signature that he propagates it to the call-site.
+
+    Checked exceptions is famously unliked feature of Java because they are highly under-designed and lack flexibility in lots of use cases.
+    For example, exception row is an ad-hoc construct and user cannot parametrize function with exception row.
+    Thus it is impossible to write higher order methods that propagate arbitrary number of checked exceptions to the call-site.
 
     \begin{minted}{java}
         static <A, B, E extends Throwable> List<B>
@@ -277,11 +276,25 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     There are methods that allow to emulate row types with other language features when they are not supported directly.
-    Haskell famous \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type classes, which constraints are unordered and support subtyping, to emulate row types~\cite{mtl}.
-    Effect handler libraries in Haskell also use type classes to express open unions similarly to row-types~\cite{alacarte}.
-    Another approach is to emulate row types with intersection types as Scala ZIO\footnote{\url{https://zio.dev/}} library does.
+    Haskell \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type classes, which constraints are unordered and support subtyping, to emulate row types~\cite{mtl}.
+    Effect handler libraries in Haskell also use type classes to express open unions similar to row-types~\cite{alacarte}.
+    Another approach is to emulate row types with intersection types~\cite{intersections}, Scala ZIO\footnote{\url{https://zio.dev/}} library can be seen as a practical example of the idea.
 
-    % todo change row syntax to koka like
+    % todo conclusion
+
+    Row-based effect systems seem to be the most straight-forward approach, so new effectful languages usually choose it as a baseline.
+    Row types (Koka version~\cite{koka}) surprisingly fit Hindley-Milner type inference style, sub-effecting is handled by adding additional polymorphic variables to effect rows $\{exn|\mu\}$.
+    At the same time rows should describe whole needed computational context, which leads to excessive verbosity of higher order function types.
+    For example, function in Koka that transforms a generator requires significant amount of ceremonies to type-check:
+    \begin{minted}{haskell}
+        fun reyield(
+            f : (int) -> <|e> int,
+            g : () -> <yield,yield|e> ()) : <yield|e> ()
+          with ctl yield(x)
+            yield(mask<yield> { f(x) })
+            resume(())
+          g()
+    \end{minted}
 
 
     \section{Systems based on capabilities} \label{sec:capabilities}
@@ -355,6 +368,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         Tutorial Text 1}. Springer Berlin Heidelberg, 1995.
         \bibitem{alacarte} Swierstra, Wouter. ``Data types à la carte.'' \textit{Journal of functional programming} 18.4 (2008): 423-436.
         \bibitem{checked-exceptions} B. Venners, B. Eckel and A. Hejlsberg, ``The Trouble with Checked Exceptions'', Aug. 2003. [Online]. Available \url{https://www.artima.com/articles/the-trouble-with-checked-exceptions}.
+        \bibitem{row-poly} Gaster, Benedict R., and Mark P. Jones. \textit{A polymorphic type system for extensible records and variants}. Technical Report NOTTCS-TR-96-3, Department of Computer Science, University of Nottingham, 1996.
+        \bibitem{coroutines-via-eh} Leijen, Daan. ``Structured asynchrony with algebraic effects.'' \textit{Proceedings of the 2nd ACM SIGPLAN International Workshop on Type-Driven Development}. 2017.
+        \bibitem{intersections} Xie, Ningning, et al. ``Row and bounded polymorphism via disjoint polymorphism.'' \textit{34th European Conference on Object-Oriented Programming (ECOOP 2020)}. Schloss-Dagstuhl-Leibniz Zentrum für Informatik, 2020.
     \end{thebibliography}
 
 
