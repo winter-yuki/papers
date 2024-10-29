@@ -364,16 +364,42 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     E.g.\ mutable state can be allocated on the stack and nobody after end of corresponding function execution should refer to it.
     Coroutines effect have a lightweight thread start point, until which delimited continuation is reified to be stored.
     Custom effect of persistent application storage uses file handle, that eventually be invalidated.
-    Here we can see similarity in concepts of resources and capabilities.
+    Here we can see similarity in concepts of resources and capabilities, because file handle is essentially a capability for working with a file.
 
-    q\cite{osvald2016gentrification}\cite{brachthauser2020effects}
+    We need to distinguish between first-class values that can be passed around freely and second-class values with limited scope.
+    One solution is to explicitly classify values on type level and restrict second-class values by the following rules~\cite{osvald2016gentrification}:
+    \begin{enumerate}
+        \item Capabilities are second-class;
+        \item First-class functions cannot refer to second-class values through free variables;
+        \item Functions can return only first-class values;
+        \item Only first-class values can be stored in object fields or mutable variables.
+    \end{enumerate}
+
+    For example, file handle capability is second-class value, so it cannot be returned.
+    Also functional type is marked as second-class to be able to capture capabilities since it do not leak anyway.
+    We use extended Scala as proposed~\cite{osvald2016gentrification}.
+    Example will produce an error, because inner lambda captures capabilities, so it is second-class value, while outer lambda tries to return it, but returning second-class values is prohibited.
+    \begin{minted}{scala}
+        def withFile[R](
+            f: @local (@local File) => R): R
+
+        withFile(newFile => () => old.copyTo(newFile))
+    \end{minted}
+
+    Capabilities should not necessarily be explicit values.
+    For instance, Effekt language\footnote{\url{https://effekt-lang.org/}}
+
+    TODO \cite{brachthauser2020effects}\cite{brachthauser2022effects}
+
+
+    TODO currying % todo
 
     % todo capability-based effect systems
 
 
     \section{Modal effect types} \label{sec:modal}
 
-    q\cite{convent2020doo}\cite{tang2024modal}
+    TODO \cite{convent2020doo}\cite{tang2024modal}
 
     % todo modal-based effect sytems
 
