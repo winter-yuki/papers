@@ -94,7 +94,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     There are approaches that allow programmers to define custom effects as a library code.
-    Namely effect handlers is a promising effect model that proves itself beyond pure functional languages community~\cite{chandrasekaran2018algebraic}.
+    Namely effect handlers is a promising effect model that proves itself beyond pure functional languages community~\cite{plotkin2013handling, chandrasekaran2018algebraic}.
 %    Example below demonstrates simple state effect implementation.
 
 %    \begin{minted}{haskell}
@@ -129,9 +129,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Custom effects is essentially a tool for creating embedded domain specific languages (eDSL).
     For example, one could define a coroutine effect that implements specific scheduling strategy and then use it as if coroutine feature was built in a host language itself~\cite{leijen2017structured}.
     Essentially, a host language could only support custom effects having all other features implemented as a eDSL libraries.
-    Different effect models compete in flexibility, expressiveness and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, van2024framework}.
-
-    % todo link to effect handlers Handling algebraic effects
+    Different effect models compete in flexibility, expressiveness and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, schrijvers2019monad, van2024framework}.
 
     Effects are all about implicitness on term level, that is why it can be so hard to reason about them.
     At the same time real-world programs are full of effects, that is why static control of their use is crucial as well as some degree of explicitness, e.g.\ in function signatures.
@@ -392,9 +390,20 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Problems arise with inheritance as well, because it is non-trivial to make unified interface for lazy and eager collections~\cite{osvald2016gentrification}.
 
     Capabilities should not necessarily be explicit values.
-    For instance, Effekt language\footnote{\url{https://effekt-lang.org/}}
+    For instance, Effekt language\footnote{\url{https://effekt-lang.org/}} uses implicit passing of capabilities on source level, while being translated to calculus with explicit passing implementing lexically scoped effect handlers~\cite{brachthauser2020effects}.
+    This approach requires effect handlers feature support and distances effect system from direct control over resource use (which may be the point that resources should never be used directly, only via high-level API).
+    Semantics of such an effect system can be formulated with context readings of types.
 
-    TODO \cite{brachthauser2020effects}\cite{brachthauser2022effects}
+    \begin{minted}{scala}
+        def buildString(ident : Int)
+          { f : Unit => Unit / {Emit[String]} }
+          : String / {Format}
+        //          provided ?\big\uparrow? capabilities
+        //         ?\big\uparrow? required capabilities
+    \end{minted}
+
+
+    TODO \cite{brachthauser2022effects}
 
 
     TODO currying % todo
