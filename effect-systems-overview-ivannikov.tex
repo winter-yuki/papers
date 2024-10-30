@@ -386,6 +386,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         withFile(newFile => () => old.copyTo(newFile))
     \end{minted}
 
+    This approach appears to be quite inflexible.
+    Imagine curried map function, popular to build data processing pipelines.
+    There is no way to work with capabilities in this settings, since curried function will try to return a second class function, which is prohibited.
+    Problems arise with inheritance as well, because it is non-trivial to make unified interface for lazy and eager collections~\cite{osvald2016gentrification}.
+
     Capabilities should not necessarily be explicit values.
     For instance, Effekt language\footnote{\url{https://effekt-lang.org/}}
 
