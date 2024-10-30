@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="15554d1e-d56c-434a-97ac-1758983892bd" name="Changes" comment="update">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" beforeDir="false" afterPath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -47,7 +48,7 @@
     "LaTeX.Effect Systems Overview.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "#1 on main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/home/yukio/Diary/projs/papers"
   }
@@ -243,7 +244,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730233195684</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="update">
+      <option name="closed" value="true" />
+      <created>1730278050825</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1730278050825</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">

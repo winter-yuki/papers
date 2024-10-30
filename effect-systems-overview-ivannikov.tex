@@ -227,7 +227,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     In this overview we concentrate on designs that were supposed to be practical rather that very expressive and advanced.
 
 
-    \section{Row-based systems}
+    \section{Row-based systems} \label{sec:rows}
 
     Row-based effect systems represent all effects of a function with row of effect labels.
     Labels are simply names of effects (source language may allow many effect operations have the same effect name), maybe applied to type arguments.
@@ -391,16 +391,21 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Capabilities should not necessarily be explicit values.
     For instance, Effekt language\footnote{\url{https://effekt-lang.org/}} uses implicit passing of capabilities on source level, while being translated to calculus with explicit passing implementing lexically scoped effect handlers~\cite{brachthauser2020effects}.
-    This approach requires effect handlers feature support and distances effect system from direct control over resource use (which may be the point that resources should never be used directly, only via high-level API).
-    Semantics of such an effect system can be formulated with context readings of types.
+    This approach requires effect handlers feature support and distances effect system from direct control over resource use (which may be the point that resources should never be used directly, only via high-level domain-specific APIs).
 
+    Effekt language uses row types as well, however, they have different semantics from discussed in previous section~\ref{sec:rows}.
+    Namely, effect rows do not denote all effects of the context anymore.
+    Semantics of such an effect system can be formulated with context readings of type signatures:
     \begin{minted}{scala}
         def buildString(ident : Int)
-          { f : Unit => Unit / {Emit[String]} }
+          // function block argument
+          { f : Unit => Unit / {Yield[String]} }
           : String / {Format}
-        //          provided ?\big\uparrow? capabilities
-        //         ?\big\uparrow? required capabilities
+          //             buildString ?\big\uparrow? provides
+          // buildString ?\big\uparrow? requires
     \end{minted}
+
+    With implicit capabilities, we again bother not about leaking of capability objects, but about leaking of delayed computations capturing capabilities.
 
 
     TODO \cite{brachthauser2022effects}
