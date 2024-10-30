@@ -57,15 +57,14 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     We hope that it will be enough to provide basic intuition about computational effects and convince that static control of them is a crucial task.
 
     We start talking about effects from the opposite, discussing purity.
-
     The only observable result of a pure computation is a value.
     Function is called pure if its result is the same for the same arguments and its application is a pure computation.
 
     Programming with pure functions is usually considered as a good practice, because it enjoys a lot of useful properties.
-    E.g.\ composition of pure functions gives pure function, code semantics appears to be clear and type systems work well providing partial specification, safety and clarity of abstraction.
+    For example, composition of pure functions gives pure function, code semantics appears to be clear and type systems work well providing partial specification, safety and clarity of abstraction.
 
     However, it is quite complicated to write and support any non-trivial program using only pure computations.
-    No matter that even IO can be modeled with explicit passing \mintinline{haskell}|World| value around~\cite{peyton1993imperative}:
+    No matter that even input/output can be modeled with explicit passing \mintinline{haskell}|World| value around~\cite{peyton1993imperative}:
 
     \begin{minted}{haskell}
         getList :: Int -> World -> (World, [Int])
@@ -83,7 +82,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Effects arise from interaction of computation with a context, which is responsible for bookkeeping, while computation queries it directly without lots of ceremonies pure code is full of.
     Such a context can be a language runtime system, providing OS services, mutable memory cells, advanced control mechanisms, etc.
     Effectful operation is a construct that performs an effect.
-    For example\ Haskell's monadic machinery and \mintinline{haskell}|do|-syntax allow to abstract over world passing:
+    For example, Haskell's monadic machinery and \mintinline{haskell}|do|-syntax allow to abstract over world passing:
 
     \begin{minted}{haskell}
         getList :: Int -> IO [Int]
@@ -114,7 +113,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Expressions can be seen as clients that either are evaluated to pure result or to request to the server (execution context, effect handler)~\cite{kiselyov2013extensible}.
     Server processes the request and resumes expression evaluation with result of the effectful operation.
     Handler defines a scope in which specific effectful operations are possible, it interprets them to pure value and effects of an enclosing scope.
-    E.g.\ handler of the state effect receives a computation that is able to perform state operations and produces a computation that do not require state effect anymore:
+    For example, handler of the state effect receives a computation that is able to perform state operations and produces a computation that do not require state effect anymore:
     \begin{minted}{haskell}
         handleState :: Eff (State s :+: effs) a
                     -> s -> Eff effs (s, a)
@@ -126,20 +125,20 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 %        \item Semantics of effecful operation is defined in a particular scope of an effect handler, operation may have different semantics in different scopes.
 %    \end{itemize}
 
-    Custom effects is essentially a tool for creating embedded domain specific languages (eDSL).
+    Custom effects are essentially a tool for creating embedded domain specific languages (eDSL).
     For example, one could define a coroutine effect that implements specific scheduling strategy and then use it as if coroutine feature was built in a host language itself~\cite{leijen2017structured}.
     Essentially, a host language could only support custom effects having all other features implemented as a eDSL libraries.
     Different effect models compete in flexibility, expressiveness and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, schrijvers2019monad, van2024framework}.
 
     Effects are all about implicitness on term level, that is why it can be so hard to reason about them.
     At the same time real-world programs are full of effects, that is why static control of their use is crucial as well as some degree of explicitness, e.g.\ in function signatures.
-    Saying specifically, we should able to be sure that every exception is handled somewhere, every function, mutating external state, declares that explicitly.
+    Saying specifically, we should be able to be sure that every exception is handled somewhere, every function, mutating external state, declares that explicitly.
 
     \begin{minted}{haskell}
         f :: Int -> Eff (State Int) Int
     \end{minted}
 
-    Without effect system it is impossible to define clear functional abstractions in impure languages, because implementation details leak unnoticed as context interactions.
+    Without an effect system defining clear functional abstractions in impure languages is not a straight-forward task, because implementation details leak unnoticed as context interactions.
 
 
     \section{Effect systems in general}
@@ -147,11 +146,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     In this section we are going to describe basic idea under all effect systems, outline core properties to use them later to describe and compare different effect systems.
     Finally, we sketch main challenges of effect systems design and conclude with brief historical notes.
 
-    To explain general ideas we will use informal notation based on System F, extended with needed constructs.
+    To explain general ideas we will use informal notation based on System F, extended with the needed constructs.
     These constructs will be explained along the way.
 
-    We consider only call-by-value languages, because call-by-name languages are less wide spread and results of interest can usually be adopted to monadic setting~\cite{wadler2003marriage}.
-    It means that effects may arise only from function applications because values are unlifted and monads are not needed for sequencing, we are can use direct-style effects.
+    We consider only call-by-value languages because call-by-name languages are less widespread and results of interest can usually be adapted to monadic setting~\cite{wadler2003marriage}.
+    It means that effects may arise only from function applications (values are unlifted) and monads are not needed for sequencing, so we can use direct-style effects.
 
     Classical type systems control shape input arguments and function return result.
     Specifically, we are able to say that function maps naturals to naturals:
@@ -174,7 +173,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Many effect systems compromise some of them for the sake of simplicity.
 
     The most important property of an effect system is effect safety.
-    Every effect can only be performed in a context, which supports it.
+    Every effect can only be performed in a context which supports it.
     Specifically, every exception should be caught, or generally, every effect handled.
     Safety implies that no effect should ever be forgotten by the type system: if a function may perform some effect, it should mention it in its type.
 
@@ -188,7 +187,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         fun withContent(f: (String) -> Unit) =
             try {
                 val content = readFile(path)
-                f(content) // can throw
+                f(content) // may throw
                 deleteFile(path)
             } catch (e: FileException) {}
     \end{minted}
@@ -222,7 +221,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     TODO more history % todo
 
-    There are a lot of advanced effect systems proposed and implemented in a literature.
+    There are a lot of advanced effect systems proposed and implemented in literature.
     However, most of them simply lack usability and flexibility~\cite{odersky2022scoped}.
     In this overview we concentrate on designs that were supposed to be practical rather that very expressive and advanced.
 
@@ -258,8 +257,8 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     TODO~\cite{hillerstrom2016liberating} % todo
 
-    There is a famous example of row-based effect system in Java~\cite{gosling2000java} --- checked exceptions.
-    Java statically verifies that all checked exceptions are caught --- programmer should either catch checked exception or declare explicitly in a method signature that he propagates it to the call-site.
+    Checked exceptions in Java~\cite{gosling2000java} is a famous example of a row-based effect system.
+    Java statically verifies that all checked exceptions are caught, programmer should either catch checked exception or declare explicitly in a method signature that he propagates it to the call-site.
 
     Checked exceptions is famously unliked feature of Java because they are highly under-designed and lack flexibility in lots of use cases~\cite{checked-exceptions}.
     For example, exception row is an ad-hoc construct and user cannot parametrize function with exception row.
@@ -275,7 +274,8 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     There are methods that allow to emulate row types with other language features when they are not supported directly.
-    Haskell \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type classes, which constraints are unordered and support subtyping, to emulate row types~\cite{jones1995functional}.
+    Haskell \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type class constraints to list effects~\cite{jones1995functional}.
+    Since constraints are unordered and support subtyping, they can be seen as some kind of ad-hoc row-types.
     Effect handler libraries in Haskell also use type classes to express open unions similar to row-types~\cite{swierstra2008data}.
     Another approach is to emulate row types with intersection types~\cite{xie2020row}, Scala ZIO\footnote{\url{https://zio.dev/}} library can be seen as a practical example of the idea.
 
@@ -304,7 +304,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \[\lambda x\ldotp \underline{print}\ap x\seq x + 1 : nat \to^{\{print\}} nat\]
 
     In this section we are going to look on effects tracking from a different point of view.
-    We assume that there are ``special'' objects in a program --- capabilities.
+    We assume that there are ``special'' objects in a program called capabilities.
     Effects can be performed only through them.
     Thus effect system should track mentioning of such objects in code.
     For example, $console$ capability provides us printing ability (we use syntax with dot to use a capability, it can be seen as syntactic sugar for passing first function argument):
@@ -312,7 +312,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Functions can receive capabilities as arguments.
     So with capabilities programmers can reason about effects the same way as they reason about bindings~\cite{brachthauser2022effects}.
-    Some systems, as we will see later, track capability objects by references (using reference-dependent types), some --- by types of capabilities.
+    Some systems, as we will see later, track capability objects by references (using reference-dependent types), some track by types of capabilities.
     \[\lambda \underline{console} \ap x \ldotp console.print\ap x\seq x + 1 : Console \to nat \to nat\]
 
     Explicit passing of capabilities as function arguments is going to be messy.
@@ -320,16 +320,16 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     In this perspective, effect systems can be seen as a tool for tracking free, dynamically bound variables~\cite{odersky2022scoped}.
     This view complements the picture: type system controls bounded variables, while effect system tracks free ones.
 
-    Capabilities offer a lightweight alternative to classical effect polymorphism --- contextual effect polymorphism~\cite{brachthauser2022effects}.
+    Capabilities offer a lightweight alternative to classical effect polymorphism called contextual effect polymorphism~\cite{brachthauser2022effects}.
     Capability is needed to perform an effect, but we can silently capture a capability in lambda function and use it there.
     So we are able to write $map$ function with familiar type without any explicit presence of effect polymorphism (effect safety aspect will be discussed later):
     \[map = \Lambda a \ap b\ldotp \lambda f\ap xs\ldotp \ldots : \forall \ap a \ap b\ldotp \underline{(a \to b)} \to list \ap a \to list \ap b \]
 
-    Another important aspect of capability-based effect systems is that they can be emulated in languages without built-in support by using a specific style of programming.
-    More precisely, functions should not use global definitions to perform effects, instead they should receive capability objects as parameters (usually called services) and use method calls on them to perform effects.
+    Another important aspect of capability-based effect systems is that they can be emulated in languages without built-in support using a specific programming style.
+    More precisely, functions should not use global definitions to perform effects, instead, they should receive capability objects as parameters (usually called services) and use method calls on them to perform effects.
     Ideally, if there is some implicit parameter passing feature support.
     We demonstrate the idea using Scala with implicits feature~\cite{odersky2004scala}.
-    Last time language evolves to native support for the idea~\cite{odersky2021safer}.
+    Language is evolving to support exception checking case natively with \mintinline{scala}|CanThrow| magic capability~\cite{odersky2021safer}.
     \begin{minted}{scala}
         class FileError {
           def reportNotFound: Nothing =
@@ -359,7 +359,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     Similar examples can be obtained for other kinds of effects.
-    E.g.\ mutable state can be allocated on the stack and nobody after end of corresponding function execution should refer to it.
+    For example, mutable state can be allocated on the stack and nobody after end of corresponding function execution should refer to it.
     Coroutines effect have a lightweight thread start point, until which delimited continuation is reified to be stored.
     Custom effect of persistent application storage uses file handle, that eventually be invalidated.
     Here we can see similarity in concepts of resources and capabilities, because file handle is essentially a capability for working with a file.
@@ -375,7 +375,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     For example, file handle capability is second-class value, so it cannot be returned.
     Also functional type is marked as second-class to be able to capture capabilities since it do not leak anyway.
-    We use extended Scala as proposed~\cite{osvald2016gentrification}.
+    We use extended Scala as proposed in~\cite{osvald2016gentrification}.
     Example will produce an error, because inner lambda captures capabilities, so it is second-class value, while outer lambda tries to return it, but returning second-class values is prohibited.
     \begin{minted}{scala}
         def withFile[R](
