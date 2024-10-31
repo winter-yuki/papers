@@ -310,7 +310,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     For example, $console$ capability provides us printing ability (we use syntax with dot to use a capability, it can be seen as syntactic sugar for passing first function argument):
     \[\lambda x\ldotp \underline{console}.print\ap x\seq x + 1 : nat \to^{\{console\}} nat\]
 
-    Functions can receive capabilities as arguments.
+    Functions can get capabilities by receiving them as arguments.
     So with capabilities programmers can reason about effects the same way as they reason about bindings~\cite{brachthauser2022effects}.
     Some systems, as we will see later, track capability objects by references (using reference-dependent types), some track by types of capabilities.
     \[\lambda \underline{console} \ap x \ldotp console.print\ap x\seq x + 1 : Console \to nat \to nat\]
@@ -329,7 +329,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     More precisely, functions should not use global definitions to perform effects, instead, they should receive capability objects as parameters (usually called services) and use method calls on them to perform effects.
     Ideally, if there is some implicit parameter passing feature support.
     We demonstrate the idea using Scala with implicits feature~\cite{odersky2004scala}.
-    Language is evolving to support exception checking case natively with \mintinline{scala}|CanThrow| magic capability~\cite{odersky2021safer}.
+    The language is evolving to support exception checking case natively with \mintinline{scala}|CanThrow| magical capability~\cite{odersky2021safer}.
     \begin{minted}{scala}
         class FileError {
           def reportNotFound: Nothing =
@@ -359,9 +359,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     Similar examples can be obtained for other kinds of effects.
-    For example, mutable state can be allocated on the stack and nobody after end of corresponding function execution should refer to it.
-    Coroutines effect have a lightweight thread start point, until which delimited continuation is reified to be stored.
-    Custom effect of persistent application storage uses file handle, that eventually be invalidated.
+    For example, a mutable state can be allocated on the stack, and nobody should refer to it after the end of the corresponding function execution.
+    The coroutine effect has a lightweight thread start point, until which delimited continuation is reified to be stored.
+    The custom effect of persistent application storage uses a file handle, that eventually be invalidated.
     Here we can see similarity in concepts of resources and capabilities, because file handle is essentially a capability for working with a file.
 
     We need to distinguish between first-class values that can be passed around freely and second-class values with limited scope.
@@ -390,26 +390,32 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Problems arise with inheritance as well, because it is non-trivial to make unified interface for lazy and eager collections~\cite{osvald2016gentrification}.
 
     Capabilities should not necessarily be explicit values.
-    For instance, Effekt language\footnote{\url{https://effekt-lang.org/}} uses implicit passing of capabilities on source level, while being translated to calculus with explicit passing implementing lexically scoped effect handlers~\cite{brachthauser2020effects}.
-    This approach requires effect handlers feature support and distances effect system from direct control over resource use (which may be the point that resources should never be used directly, only via high-level domain-specific APIs).
+    For instance, Effekt language\footnote{\url{https://effekt-lang.org/}} uses implicit passing of capabilities on the source level while being translated to calculus with explicit passing implementing lexically scoped effect handlers~\cite{brachthauser2020effects}.
+    This approach requires effect handlers feature support and distances the effect system from direct control over resource use (which may be the point that resources should never be used directly, only via high-level domain-specific APIs).
 
     Effekt language uses row types as well, however, they have different semantics from discussed in previous section~\ref{sec:rows}.
     Namely, effect rows do not denote all effects of the context anymore.
     Semantics of such an effect system can be formulated with context readings of type signatures:
     \begin{minted}{scala}
-        def buildString(ident : Int)
+        def buildString(ident: Int)
           // function block argument
-          { f : Unit => Unit / {Yield[String]} }
+          { f: Unit => Unit / {Yield[String]} }
           : String / {Format}
-          //             buildString ?\big\uparrow? provides
-          // buildString ?\big\uparrow? requires
+          //      effects buildString ?\big\uparrow? provides
+          //    effects ?\big\uparrow? buildString requires
     \end{minted}
 
-    With implicit capabilities, we again bother not about leaking of capability objects, but about leaking of delayed computations capturing capabilities.
+    With implicit capabilities, we again worry not about the leak of capability objects but about the leak of delayed computations capturing capabilities.
+    However, the effect system does not track all effects in a functional type, so it will not be able to check if the context of the call site is valid.
+    Effekt language initially solved this issue simply by making all functions second-class blocks~\cite{brachthauser2020effects}.
 
 
-    TODO \cite{brachthauser2022effects}
 
+
+
+    TODO \cite{brachthauser2022effects} % todo
+
+    TODO \cite{odersky2022scoped} % todo
 
     TODO currying % todo
 
