@@ -415,14 +415,16 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     For this purpose, explicit boxing was proposed:
     \texttt{box} construct takes implicit capability requirements of a term and makes them explicit,
     \texttt{unbox} makes type system check that boxed value can be used in current computational context~\cite{brachthauser2022effects}.
-    So second-class value can be boxed, leaked from the current context, carried to another context, and, if other context is appropriate, unboxed to use.
+    So second-class value can be boxed, leaked from the current context, carried to another context, and, if this context is appropriate, unboxed to use.
     \begin{gather*}
         \infer[BoxIntro]{\Gamma \vdash \mathbf{box}\ap b : \sigma~ \mathbf{at}\ap C ~|~ \{\}}{\Gamma \vdash b : \sigma ~|~ C}
         \\
         \infer[BoxElim]{\Gamma \vdash \mathbf{unbox}\ap e : \sigma ~|~ C}{\Gamma \vdash e : \sigma ~\mathbf{at}~C ~|~ \{\}}
     \end{gather*}
 
-    To provide users an ability to refer to capabilities implicitly captured by some value, Effekt features capability polymorphism as a way to express: a boxed value closes over the same capabilities as other particular value captures.
+    Since type of boxed values describe all context requirements, previously implicit, there should be a way to refer to them.
+    Hence, Effekt features capability polymorphism which allows to express that a boxed value closes over the same capabilities as other particular value captures.
+    For example, now it is possible to write down curried \texttt{map} function, that returns boxed block, capturing \texttt{f}, and, transitively, all capabilities captured by \texttt{f}.
     \begin{minted}{scala}
         def map[T, R] { f: T => R }
           : List<T> => R at {f}
@@ -431,6 +433,10 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         map { x => console.print(x) }
           : List<T> => Unit at {console}
     \end{minted}
+
+
+
+    % todo
 
 
 %    to do type-based escape analysis~\cite{hannan1998type}.
