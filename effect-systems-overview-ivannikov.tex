@@ -20,6 +20,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{minted}
 \setminted{xleftmargin=\parindent, autogobble, escapeinside=??, numberblanklines=false, fontsize=\small}
 \usepackage{hyperref}
+\usepackage{proof}
 \newcommand{\seq}{;~}
 \newcommand{\ap}{~}
 
@@ -395,25 +396,45 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Effekt language uses row types as well, however, they have different semantics from discussed in previous section~\ref{sec:rows}.
     Namely, effect rows do not denote all effects of the context anymore.
-    Semantics of such an effect system can be formulated with context readings of type signatures:
+    Semantics of such an effect system can be formulated as context readings of type signatures:
     \begin{minted}{scala}
         def buildString(ident: Int)
           // function block argument
-          { f: Unit => Unit / {Yield[String]} }
+          { f: () => () / {Yield[String]} }
+          // capabilities buildString ?\big\uparrow? provides
           : String / {Format}
-          //      effects buildString ?\big\uparrow? provides
-          //    effects ?\big\uparrow? buildString requires
+          // capabilities ?\big\uparrow? buildString requires
     \end{minted}
 
     With implicit capabilities, we again worry not about the leak of capability objects but about the leak of delayed computations capturing capabilities.
     However, the effect system does not track all effects in a functional type, so it will not be able to check if the context of the call site is valid.
     Effekt language initially solved this issue simply by making all functions second-class blocks~\cite{brachthauser2020effects}.
 
+    Nevertheless, supporting only second-class blocks is too restrictive, as discussed before.
+    To lift the second-class restriction, there should be a way to explicate effects back in types.
+    For this purpose, explicit boxing was proposed:
+    \texttt{box} construct takes implicit capability requirements of a term and makes them explicit,
+    \texttt{unbox} makes type system check that boxed value can be used in current computational context~\cite{brachthauser2022effects}.
+    So second-class value can be boxed, leaked from the current context, carried to another context, and, if other context is appropriate, unboxed to use.
+    \begin{gather*}
+        \infer[BoxIntro]{\Gamma \vdash \mathbf{box}\ap b : \sigma~ \mathbf{at}\ap C ~|~ \{\}}{\Gamma \vdash b : \sigma ~|~ C}
+        \\
+        \infer[BoxElim]{\Gamma \vdash \mathbf{unbox}\ap e : \sigma ~|~ C}{\Gamma \vdash e : \sigma ~\mathbf{at}~C ~|~ \{\}}
+    \end{gather*}
+
+    To provide users an ability to refer to capabilities implicitly captured by some value, Effekt features capability polymorphism as a way to express: a boxed value closes over the same capabilities as other particular value captures.
+    \begin{minted}{scala}
+        def map[T, R] { f: T => R }
+          : List<T> => R at {f}
+          { box { xs => go(f, xs) } }
+
+        map { x => console.print(x) }
+          : List<T> => Unit at {console}
+    \end{minted}
 
 
+%    to do type-based escape analysis~\cite{hannan1998type}.
 
-
-    TODO \cite{brachthauser2022effects} % todo
 
     TODO \cite{odersky2022scoped} % todo
 
@@ -439,10 +460,10 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     % todo conclusion
 
 
-%    \section*{Acknowledgment}
-%
-%    I would like to thank Mikhail Belyaev and Denis Moskvin for discussion and lots of helpful comments.
-%    Also I'm grateful to Huawei Corporation for funding this work.
+    \section*{Acknowledgment}
+
+    I would like to thank Mikhail Belyaev and Denis Moskvin for discussion and lots of helpful comments.
+    Also I'm grateful to Huawei Corporation for funding this work.
 
     % todo acknoledgement
 
