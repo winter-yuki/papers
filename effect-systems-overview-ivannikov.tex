@@ -300,7 +300,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Systems based on capabilities} \label{sec:capabilities}
 
-    Previously we used to see effects as calls of ``special'' functions, e.g. \texttt{print}, and listed corresponding effect labels in types.
+    Previously we used to see effects as calls of ``special'' functions, e.g. \texttt{print}, and listed all corresponding effect labels in types.
     This understanding lead us to quite verbose systems tracking too much information\footnote{We use underlining for highlighting purposes.}.
     \[\lambda x\ldotp \underline{print}\ap x\seq x + 1 : nat \to^{\{print\}} nat\]
 
@@ -308,16 +308,16 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     We assume that there are ``special'' objects in a program called capabilities.
     Effects can be performed only through them.
     Thus effect system should track mentioning of such objects in code.
+    Some systems, as we will see later, track them by references (using reference-dependent types), some track by types of capabilities.
     For example, $console$ capability provides us printing ability (we use syntax with dot to use a capability, it can be seen as syntactic sugar for passing first function argument):
     \[\lambda x\ldotp \underline{console}.print\ap x\seq x + 1 : nat \to^{\{console\}} nat\]
 
     Functions can get capabilities by receiving them as arguments.
-    So with capabilities programmers can reason about effects the same way as they reason about bindings~\cite{brachthauser2022effects}.
-    Some systems, as we will see later, track capability objects by references (using reference-dependent types), some track by types of capabilities.
+    So with capabilities programmers can reason about effects the same way as they reason about bindings~\cite{brachthauser2022effects}, i.e.\ example can be rewritten with explicit parameter instead of effect type:
     \[\lambda \underline{console} \ap x \ldotp console.print\ap x\seq x + 1 : Console \to nat \to nat\]
 
-    Explicit passing of capabilities as function arguments is going to be messy.
-    Therefore, languages tend to use implicit parameter passing techniques for this purpose.
+    Explicit passing of capabilities as function arguments is going to be messy (exactly this problem we are trying to solve with effects).
+    Therefore, language should provide some implicit parameter passing support.
     In this perspective, effect systems can be seen as a tool for tracking free, dynamically bound variables~\cite{odersky2022scoped}.
     This view complements the picture: type system controls bounded variables, while effect system tracks free ones.
 
@@ -328,7 +328,6 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Another important aspect of capability-based effect systems is that they can be emulated in languages without built-in support using a specific programming style.
     More precisely, functions should not use global definitions to perform effects, instead, they should receive capability objects as parameters (usually called services) and use method calls on them to perform effects.
-    Ideally, if there is some implicit parameter passing feature support.
     We demonstrate the idea using Scala with implicits feature~\cite{odersky2004scala}.
     The language is evolving to support exception checking case natively with \mintinline{scala}|CanThrow| magical capability~\cite{odersky2021safer}.
     \begin{minted}{scala}
@@ -363,7 +362,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     For example, a mutable state can be allocated on the stack, and nobody should refer to it after the end of the corresponding function execution.
     The coroutine effect has a lightweight thread start point, until which delimited continuation is reified to be stored.
     The custom effect of persistent application storage uses a file handle, that eventually be invalidated.
-    Here we can see similarity in concepts of resources and capabilities, because file handle is essentially a capability for working with a file.
+    Here we can see similarity in concepts of resources and capabilities, both of them have limited lifetime, e.g.\ file handle is essentially a capability for working with a file.
 
     We need to distinguish between first-class values that can be passed around freely and second-class values with limited scope.
     One solution is to explicitly classify values on type level and restrict second-class values by the following rules~\cite{osvald2016gentrification}:
@@ -388,7 +387,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     This approach appears to be quite inflexible.
     Imagine curried map function, popular to build data processing pipelines.
     There is no way to work with capabilities in this settings, since curried function will try to return a second class function, which is prohibited.
-    Problems arise with inheritance as well, because it is non-trivial to make unified interface for lazy and eager collections~\cite{osvald2016gentrification}.
+    Problems arise with inheritance as well, e.g.\ it is non-trivial to make unified interface for lazy and eager collections~\cite{osvald2016gentrification}.
 
     Capabilities should not necessarily be explicit values.
     For instance, Effekt language\footnote{\url{https://effekt-lang.org/}} uses implicit passing of capabilities on the source level while being translated to calculus with explicit passing implementing lexically scoped effect handlers~\cite{brachthauser2020effects}.
@@ -401,10 +400,16 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         def buildString(ident: Int)
           // function block argument
           { f: () => () / {Yield[String]} }
-          // capabilities buildString ?\big\uparrow? provides
+          // capabilities ?\big\uparrow? buildString provides
           : String / {Format}
           // capabilities ?\big\uparrow? buildString requires
     \end{minted}
+
+    Note that in this setting effect encapsulation works by default.
+    Effekt uses type-directed translation and will not provide capabilities to argument block if it do not require them explicitly in type.
+    At the same time Effekt do not provide any means of masking, so capability from lexically closest scope will always be provided.
+
+    % todo
 
     With implicit capabilities, we again worry not about the leak of capability objects but about the leak of delayed computations capturing capabilities.
     However, the effect system does not track all effects in a functional type, so it will not be able to check if the context of the call site is valid.
@@ -414,17 +419,18 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     To lift the second-class restriction, there should be a way to explicate effects back in types.
     For this purpose, explicit boxing was proposed:
     \texttt{box} construct takes implicit capability requirements of a term and makes them explicit,
-    \texttt{unbox} makes type system check that boxed value can be used in current computational context~\cite{brachthauser2022effects}.
-    So second-class value can be boxed, leaked from the current context, carried to another context, and, if this context is appropriate, unboxed to use.
+    \texttt{unbox} makes type system check that boxed value can be used in current computational context~\cite{hannan1998type, brachthauser2022effects}.
+    So second-class value can be boxed, leaked from the current context, carried to another context, and, if this new context is appropriate, unboxed to use.
     \begin{gather*}
         \infer[BoxIntro]{\Gamma \vdash \mathbf{box}\ap b : \sigma~ \mathbf{at}\ap C ~|~ \{\}}{\Gamma \vdash b : \sigma ~|~ C}
         \\
         \infer[BoxElim]{\Gamma \vdash \mathbf{unbox}\ap e : \sigma ~|~ C}{\Gamma \vdash e : \sigma ~\mathbf{at}~C ~|~ \{\}}
     \end{gather*}
 
-    Since type of boxed values describe all context requirements, previously implicit, there should be a way to refer to them.
-    Hence, Effekt features capability polymorphism which allows to express that a boxed value closes over the same capabilities as other particular value captures.
-    For example, now it is possible to write down curried \texttt{map} function, that returns boxed block, capturing \texttt{f}, and, transitively, all capabilities captured by \texttt{f}.
+    Since types of boxed values again list all effects, there should be some form of effect polymorphism supported.
+    Hence, Effekt features capability polymorphism which allows to express that a boxed value closes over the same capabilities as captured by a particular value~\cite{brachthauser2022effects}.
+    To do this, Effekt turned to explicit capability passing and tracking capability objects by references instead of by types.
+    For example, now it is possible to write down a curried \texttt{map} function, that returns a boxed block, capturing \texttt{f}, and, transitively, all capabilities captured by \texttt{f}.
     \begin{minted}{scala}
         def map[T, R] { f: T => R }
           : List<T> => R at {f}
@@ -436,10 +442,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 
 
-    % todo
 
 
-%    to do type-based escape analysis~\cite{hannan1998type}.
+
+    % todo какие-то выводы по жизни
+
 
 
     TODO \cite{odersky2022scoped} % todo
