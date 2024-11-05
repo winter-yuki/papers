@@ -341,16 +341,14 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
             throw FileNotFoundException()
         }
 
-        def process()(implicit fe: FileError) = {
+        def process()(implicit fe: FileError) =
           fe.reportNotFound // use the capability
-        }
 
         // define scope for the capability
-        def withFileError[R](f: FileError => R) = {
+        def withFileError[R](f: FileError => R) =
           try {
             f(FileError())
           } catch case _: FileNotFoundException ...
-        }
     \end{minted}
 
     Unfortunately, capability-based effect systems require additional efforts to be safe, which complicates them significantly.
@@ -453,7 +451,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     In the rest of the section, we will describe this approach.
     Experimental implementation is already available in Scala\footnote{\url{https://docs.scala-lang.org/scala3/reference/experimental/cc.html}}.
 
-    We can ascribe every value of type \mintinline{scala}|T| with the type of the form \mintinline{scala}|T^{cap}|, which indicates that this value is a capability and its use should be restricted.
+    We can ascribe every value of type \mintinline{scala}|T| with the type of the form \mintinline{scala}|T^{cap}| (or \mintinline{scala}|T^| for short), which indicates that this value is a capability and its use should be restricted.
     Namely, it cannot be returned from functions, and generics cannot be instantiated with its type.
     These values are like the second-class values described before, but the restriction of capability capturing is dropped: the type system accurately tracks capturing instead.
     For example, lazy list may capture \texttt{file} and \texttt{service} capabilities:
@@ -466,13 +464,44 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Since contextual polymorphism is supported, functional types are capabilities as well.
     Specifically, \mintinline{scala}|=>| type is a syntactic sugar for \mintinline{scala}|->^{cap}| type (thin arrow is a type of pure functions).
     So, impure functions can capture capabilities and should obey capability restrictions.
+    For example, \texttt{map} function (uncurried and curried versions) can be typed as follows:
+    \begin{minted}{scala}
+        def map[A,B](f: A => B, xs: List[A]): List[B]
+        def map[A,B](f: A => B): List[A] ->^{f} List[B]
+    \end{minted}
+
+
+
+    Capabilities form subcapturing hierarchy: some capture sets can be safely used instead of others.
+    For instance,
+
+    \begin{minted}[escapeinside=##]{scala}
+        class FileSystem
+
+        class Logger(fs: FileSystem^):
+          def log(s: String): Unit = ???
+
+        def withLoger[T](f: OutputStream^,
+                         op: (Logger^{f}) => T): T =
+          op(Logger(f))
+
+        def test(fs: FileSystem^): LazyList[Int]^{fs} =
+          val l: Logger^{fs} = Logger(fs)
+          val xs: LazyList[Int]^{l} =
+            LazyList.from(1)
+              .map { i =>
+                l.log(s"computing elem # $i")
+                i * i
+              }
+          xs
+    \end{minted}
 
     
 
 
 
 
-
+    % todo complexity and dependent types
 
     TODO % todo
 
