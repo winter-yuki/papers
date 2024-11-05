@@ -192,7 +192,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     We consider two aspects of encapsulation.
-    Firstly, the effect system should prevent accidental handling, i.e.,\ it should explicitly track information that particular effects will be handled, e.g.,\ in the previous example, \texttt{f} should carry the information about expected \mintinline{scala}|FileException|.
+    Firstly, the effect system should prevent accidental handling, i.e.,\ it should explicitly track information that particular effects will be handled, e.g.,\ in the previous example, \texttt{f} type should carry the information about expected \mintinline{scala}|FileException|.
     Secondly, there should be a way to mask implementation detail effects from being handled by the innermost handler \mintinline{scala}|mask(f(content))| (in this case, no additional type information is needed).
 
     Effects are inherently transitive along the edges of the dynamic call-graph, i.e., \ a function's effects include the effects of all the functions it calls transitively~\cite{odersky2022scoped}.
@@ -224,8 +224,6 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Later, Wadler and Thiemann showed~\cite{wadler2003marriage} that programming with monads~\cite{moggi1988computational} can subsume early effect systems like the one proposed by Lucassen and Gifford~\cite{lucassen1988polymorphic}.
     We are not considering this branch of research because monads proved to be not a well-composable solution~\cite{liang1995monad, kiselyov2013extensible}, and they are not necessarily needed to model effects in call-by-value languages.
 
-    TODO more history % todo
-
     Many advanced effect systems have been proposed and implemented in the literature.
     However, most of them lack usability and flexibility~\cite{odersky2022scoped}.
     In this overview, we concentrate on designs that were supposed to be practical rather than very expressive and advanced.
@@ -251,15 +249,6 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Ideally, every higher-order function should be parametrized over the effects of argument functions, which makes smooth migration to the effect system impossible and introduces significant code syntactic pollution, complicating the creation of code abstractions.
 
-    TODO effect encapsulation % todo
-
-    TODO effect negation % todo
-
-    TODO subeffecting and inference % todo
-
-    TODO drawbacks of this approach % todo
-
-    TODO~\cite{hillerstrom2016liberating} % todo
 
     Checked exceptions in Java~\cite{gosling2000java} is a famous example of a row-based effect system.
     Java statically verifies that all checked exceptions are caught.
@@ -278,18 +267,22 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
             (String s) -> throw new IOException(s))
     \end{minted}
 
-    Some methods allow the emulation of row types with other language features when not directly supported.
-    Haskell \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type class constraints to list effects~\cite{jones1995functional}.
-    Since constraints are unordered and support subtyping, we can see them as ad-hoc row types.
-    Effect handler libraries in Haskell also use type classes to express open unions similar to row-types~\cite{swierstra2008data}.
-    Another approach is to emulate row types with intersection types~\cite{xie2020row}, Scala ZIO\footnote{\url{https://zio.dev/}} library can be seen as a practical example of the idea.
 
-    % todo conclusion
+    Many research languages are implementing row-based effect systems.
+    Some of them are overcomplicated in supporting external purity proofs and effect encapsulation.
+    For example, they use presence annotations on effect labels and presence polymorphism~\cite{hillerstrom2016liberating}.
+    We will use the effect system of the Koka language for illustrative purposes because it is simple yet powerful enough~\cite{leijen2014koka, leijen2017type}.
 
-    Row-based effect systems are the most straightforward approach, so new effectful languages usually choose it as a baseline.
-    Row types (Koka version~\cite{leijen2014koka, leijen2017type}) surprisingly fit the Hindley-Milner type inference style: sub-effecting is handled by adding additional polymorphic variables to effect rows $\{exn|\mu\}$.
-    At the same time, rows should describe the whole needed computational context, which leads to excessive verbosity of higher-order function types.
-    For example, a function in Koka that transforms a generator requires many ceremonies to type-check:
+    Koka distinguishes duplicated effect labels in rows, following the idea of scoped labels designed for record types~\cite{leijen2005extensible}.
+    It allows Koka to achieve several goals at once.
+    Firstly,
+
+    TODO external purity
+
+    Secondly, Koka will prevent accidental handling by inferring proper type that inform programmer that a particular effect will be handled.
+    At the same time, Koka provides \texttt{mask} operation to hide a particular effect from innermost handler and, therefore, encapsulate this effect.
+    The type of \texttt{mask} is \texttt{(() -> <l|e> a) -> () -> <l,l|e> a} (Koka uses angle brackets after function arrow for row types).
+    For example, the following function that transforms a generator hides handling of \texttt{yield} effect from function \texttt{f}:
     \begin{minted}{haskell}
         fun reyield(
             f : (int) -> <|e> int,
@@ -300,6 +293,17 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
             resume(())
           g()
     \end{minted}
+
+
+    Some methods allow the emulation of row types with other language features when not directly supported.
+    Haskell \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type class constraints to list effects~\cite{jones1995functional}.
+    Since constraints are unordered and support subtyping, we can see them as ad-hoc row types.
+    Effect handler libraries in Haskell also use type classes to express open unions similar to row-types~\cite{swierstra2008data}.
+    Another approach is to emulate row types with intersection types~\cite{xie2020row}, Scala ZIO\footnote{\url{https://zio.dev/}} library can be seen as a practical example of the idea.
+
+    Row-based effect systems are the most straightforward approach, so new effectful languages usually choose it as a baseline.
+    Row types (Koka version~\cite{leijen2014koka, leijen2017type}) surprisingly fit the Hindley-Milner type inference style: sub-effecting is handled by adding additional polymorphic variables to effect rows $\{exn|\mu\}$.
+    At the same time, rows should describe the whole needed computational context, leading to excessive verbosity of higher-order function types (consider \texttt{reyield} example above).
 
 
     \section{Systems based on capabilities} \label{sec:capabilities}
@@ -496,11 +500,12 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
           newList
     \end{minted}
 
-    Note that syntactic pollution with the capture-checking approach seems quite reasonable.
-    Users need to pay the syntactic burden only when leaking something out of scope; otherwise, capability inference should do the job.
-    At the same time, average programmers are generally not familiar with dependent types, which may complicate the adoption of this feature.
+    Note that the amount of syntactic pollution with the capture-checking approach seems quite reasonable.
+    Users need to carry the syntactic burden only when leaking something out of scope; otherwise, capability inference should do the job.
+    However, average programmers are generally not familiar with dependent types, which may complicate the adoption of this feature.
 
     In conclusion, capabilities offer a simple way of reasoning about effects as about special objects passed from outside.
+    Context polymorphism allows to omit effect tracking ceremonies for simple cases.
     At the same time, establishing safety is non-trivial and requires class separation of values or dependent types.
 
 
@@ -515,13 +520,13 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Conclusion}
 
-    % todo conclusion
+    TODO % todo conclusion
 
 
-%    \section*{Acknowledgment}
-%
-%    We thank Mikhail Belyaev, Denis Moskvin and Sergey Kovaltsov for the discussion and helpful comments.
-%    Also, we are grateful to Huawei Corporation for funding this work.
+    \section*{Acknowledgment}
+
+    We thank Mikhail Belyaev, Denis Moskvin and Sergey Kovaltsov for the discussion and helpful comments.
+    Also, we are grateful to Huawei Corporation for funding this work.
 
     % todo acknoledgement
 
