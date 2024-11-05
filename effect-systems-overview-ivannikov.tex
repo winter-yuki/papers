@@ -273,25 +273,29 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     For example, they use presence annotations on effect labels and presence polymorphism~\cite{hillerstrom2016liberating}.
     We will use the effect system of the Koka language for illustrative purposes because it is simple yet powerful enough~\cite{leijen2014koka, leijen2017type}.
 
-    Koka distinguishes duplicated effect labels in rows, following the idea of scoped labels designed for record types~\cite{leijen2005extensible}.
+    Koka distinguishes duplicated effect labels in rows $\{l,l\}\neq \{l\}$, following the idea of scoped labels designed for record types~\cite{leijen2005extensible}.
     It allows Koka to achieve several goals at once.
-    Firstly,
+    In particular, effect elimination forms are straightforward: we discard \texttt{exn} in final effect \texttt{e} (Koka uses angle brackets after the function arrow for row types).
+    \begin{minted}{haskell}
+        fun catch(f : () -> <exn|e> a,
+                  h : err -> <|e> a) : <|e> a
+    \end{minted}
 
-    TODO external purity
+    TODO external purity % todo
 
-    Secondly, Koka will prevent accidental handling by inferring proper type that inform programmer that a particular effect will be handled.
-    At the same time, Koka provides \texttt{mask} operation to hide a particular effect from innermost handler and, therefore, encapsulate this effect.
-    The type of \texttt{mask} is \texttt{(() -> <l|e> a) -> () -> <l,l|e> a} (Koka uses angle brackets after function arrow for row types).
-    For example, the following function that transforms a generator hides handling of \texttt{yield} effect from function \texttt{f}:
+    Koka will prevent accidental handling by inferring the proper type that informs programmer that a particular effect will be handled.
+    At the same time, Koka provides \texttt{mask} operation to hide a particular effect from the innermost handler and, therefore, encapsulate this effect.
+    The type of \texttt{mask} is \texttt{(() -> <l|e> a) -> () -> <l,l|e> a}.
+    For example, the following function that transforms a generator hides handling of \texttt{yield} effect from function \texttt{f} (however, it is impossible to hide second \texttt{yield} from \texttt{g}):
     \begin{minted}{haskell}
         fun reyield(
             f : (int) -> <|e> int,
             g : () -> <yield,yield|e> ()
         ) : <yield|e> ()
-          with ctl yield(x)
+          with ctl yield(x) // (1)
             yield(mask<yield> { f(x) })
             resume(())
-          g()
+          g() // yield dispatches to (1)
     \end{minted}
 
 
@@ -523,10 +527,10 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     TODO % todo conclusion
 
 
-    \section*{Acknowledgment}
-
-    We thank Mikhail Belyaev, Denis Moskvin and Sergey Kovaltsov for the discussion and helpful comments.
-    Also, we are grateful to Huawei Corporation for funding this work.
+%    \section*{Acknowledgment}
+%
+%    We thank Mikhail Belyaev, Denis Moskvin and Sergey Kovaltsov for the discussion and helpful comments.
+%    Also, we are grateful to Huawei Corporation for funding this work.
 
     % todo acknoledgement
 
