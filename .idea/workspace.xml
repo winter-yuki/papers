@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15554d1e-d56c-434a-97ac-1758983892bd" name="Changes" comment="Update">
+    <list default="true" id="15554d1e-d56c-434a-97ac-1758983892bd" name="Changes" comment="Fix Sergey">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" beforeDir="false" afterPath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" afterDir="false" />
     </list>
@@ -314,7 +314,23 @@
       <option name="project" value="LOCAL" />
       <updated>1730810834262</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="Update">
+      <option name="closed" value="true" />
+      <created>1730813505055</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1730813505055</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Fix Sergey">
+      <option name="closed" value="true" />
+      <created>1730815810617</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1730815810617</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -323,6 +339,7 @@
     <MESSAGE value="Fix comments iteration 1" />
     <MESSAGE value="Apply Grammarly" />
     <MESSAGE value="Update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update" />
+    <MESSAGE value="Fix Sergey" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix Sergey" />
   </component>
 </project>

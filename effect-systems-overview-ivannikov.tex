@@ -289,7 +289,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Row-based effect systems are the most straightforward approach, so new effectful languages usually choose it as a baseline.
     Row types (Koka version~\cite{leijen2014koka, leijen2017type}) surprisingly fit the Hindley-Milner type inference style: sub-effecting is handled by adding additional polymorphic variables to effect rows $\{exn|\mu\}$.
     At the same time, rows should describe the whole needed computational context, which leads to excessive verbosity of higher-order function types.
-    For example, a function in Koka that transforms a generator requires a significant amount of ceremonies to type-check:
+    For example, a function in Koka that transforms a generator requires many ceremonies to type-check:
     \begin{minted}{haskell}
         fun reyield(
             f : (int) -> <|e> int,
@@ -470,42 +470,38 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         def map[A,B](f: A => B): List[A] ->^{f} List[B]
     \end{minted}
 
-
-
     Capabilities form subcapturing hierarchy: some capture sets can be safely used instead of others.
-    For instance,
+    $C_1 <: C_2$ if $C_1$ is covered by $C_2$.
+    For instance, universal capability \mintinline{scala}|^{cap}| covers every other capability $C <: \{cap\}$; if some \mintinline{scala}|f| captures capabilities \mintinline{scala}|c1| and \mintinline{scala}|c2|, then $\{f\} <: \{c1, c2\}$ by transitivity.
 
+    Let us consider a non-trivial example.
+    We define \mintinline{scala}|Logger| class that depends on \mintinline{scala}|File| capability by receiving it in the primary constructor.
+    \mintinline{scala}|test| function creates logger out of provided \mintinline{scala}|File|.
+    \mintinline{scala}|map| on \mintinline{scala}|LazyList| returns a new list that remembers the provided lambda function, so this new list object captures the capabilities mentioned in the function's body.
+    Note that types reflect all the capturing we describe.
+    Finally, Scala checks that \mintinline{scala}|LazyList[Int]^{l}| is subtype of \mintinline{scala}|LazyList[Int]^{file}|.
+    Indeed, it is true because one capture set covers another $\{l\} <: \{file\}$.
     \begin{minted}[escapeinside=##]{scala}
-        class FileSystem
-
-        class Logger(fs: FileSystem^):
+        class Logger(file: File^):
           def log(s: String): Unit = ???
 
-        def withLoger[T](f: OutputStream^,
-                         op: (Logger^{f}) => T): T =
-          op(Logger(f))
-
-        def test(fs: FileSystem^): LazyList[Int]^{fs} =
-          val l: Logger^{fs} = Logger(fs)
-          val xs: LazyList[Int]^{l} =
-            LazyList.from(1)
-              .map { i =>
-                l.log(s"computing elem # $i")
-                i * i
-              }
-          xs
+        def test(file: File^): LazyList[Int]^{file} =
+          val l: Logger^{file} = Logger(file)
+          l.log("hello world!")
+          val newList: LazyList[Int]^{l} =
+            LazyList.from(1).map { i =>
+              l.log(s"computing elem # $i")
+              i * i
+            }
+          newList
     \end{minted}
 
-    
+    Note that syntactic pollution with the capture-checking approach seems quite reasonable.
+    Users need to pay the syntactic burden only when leaking something out of scope; otherwise, capability inference should do the job.
+    At the same time, average programmers are generally not familiar with dependent types, which may complicate the adoption of this feature.
 
-
-
-
-    % todo complexity and dependent types
-
-    TODO % todo
-
-    % todo capability-based effect systems
+    In conclusion, capabilities offer a simple way of reasoning about effects as about special objects passed from outside.
+    At the same time, establishing safety is non-trivial and requires class separation of values or dependent types.
 
 
     \section{Modal effect types} \label{sec:modal}
