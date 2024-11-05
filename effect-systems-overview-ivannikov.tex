@@ -54,15 +54,15 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Introduction to effects}
 
-    This section provides a brief introduction to computational effects without a deep dive into particular effect models (approaches that give effects dynamic semantics).
-    We hope it provides basic intuition about computational effects and convinces that static control of them is crucial.
+    This section briefly introduces computational effects without a deep dive into particular effect models (approaches that give effects dynamic semantics).
+    We hope it provides basic intuition about computational effects and convinces about the cruciality of static control over them.
 
     We start talking about effects from the opposite, discussing purity.
     The only observable result of a pure computation is a value.
     A function is called pure if its result is the same for the same arguments, and its application is a pure computation.
 
     Programming with pure functions is usually considered a good practice because it enjoys a lot of useful properties.
-    For example, the composition of pure functions gives pure functions, code semantics appear clear, and type systems work well, providing partial specification, safety, and clarity of abstraction.
+    The composition of pure functions gives pure functions, code semantics appear clear, and type systems work well, providing partial specification, safety, and clarity of abstraction.
 
     However, writing and supporting any non-trivial program using only pure computations is quite complicated.
     No matter that even input/output can be modeled with explicit passing \mintinline{haskell}|World| value around~\cite{peyton1993imperative}:
@@ -77,7 +77,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     The problem is that with pure functions, everything should be managed explicitly by receiving some parameters and returning something.
     So, the programmer should keep everything in mind and do bookkeeping manually all over the code.
-    Thus, there should be a tool for managing complexity: something that takes responsibility for bookkeeping for programmers and sweeps unnecessary details under the carpet.
+    Thus, a tool for managing complexity is necessary: something that takes responsibility for bookkeeping for programmers and sweeps unnecessary details under the carpet.
 
     Computational effects is such a tool.
     Effects arise from the interaction of computation with a context, which is responsible for bookkeeping, while computation queries it directly without the many ceremonies pure code is full of.
@@ -127,9 +127,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 %    \end{itemize}
 
     Custom effects are a tool for creating embedded domain-specific languages (eDSL).
-    For example, one could define a coroutine effect that implements a specific scheduling strategy and then use it as if the coroutine feature was built in a host language itself~\cite{leijen2017structured}.
+    For example, one could define a coroutine effect that implements a specific scheduling strategy and then use it as if the coroutine feature were built in a the host language itself~\cite{leijen2017structured}.
     A host language could only support custom effects when all other features are implemented as eDSL libraries.
-    Different effect models compete in flexibility, expressiveness, and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, schrijvers2019monad, van2024framework}.
+    Different effect models compete in expressiveness and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, schrijvers2019monad, van2024framework}.
 
     Effects are all about implicitness on a term level, which is why they can be so difficult to reason about.
     At the same time, real-world programs are full of effects, so static control of their use is crucial, as well as some degree of explicitness, e.g., \ in function signatures.
@@ -219,10 +219,10 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     So, there should be subtyping on effect types.
 
 
-    The first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side-effects~\cite{lucassen1988polymorphic}.
+    The first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side effects~\cite{lucassen1988polymorphic}.
     They extended the type system with effect labels and regions (which describe the affected area of the store).
-    Later, Wadler and Thiemann showed~\cite{wadler2003marriage} that early effect systems like~\cite{lucassen1988polymorphic} can be subsumed by programming with monads~\cite{moggi1988computational}.
-    We are not considering this branch of research because monads proved not well composable solution~\cite{liang1995monad, kiselyov2013extensible}, and they are not necessarily needed to model effects in call-by-value languages.
+    Later, Wadler and Thiemann showed~\cite{wadler2003marriage} that programming with monads~\cite{moggi1988computational} can subsume early effect systems like the one proposed by Lucassen and Gifford~\cite{lucassen1988polymorphic}.
+    We are not considering this branch of research because monads proved to be not a well-composable solution~\cite{liang1995monad, kiselyov2013extensible}, and they are not necessarily needed to model effects in call-by-value languages.
 
     TODO more history % todo
 
@@ -287,7 +287,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     % todo conclusion
 
     Row-based effect systems are the most straightforward approach, so new effectful languages usually choose it as a baseline.
-    Row types (Koka version~\cite{leijen2014koka, leijen2017type}) surprisingly fit Hindley-Milner type inference style, sub-effecting is handled by adding additional polymorphic variables to effect rows $\{exn|\mu\}$.
+    Row types (Koka version~\cite{leijen2014koka, leijen2017type}) surprisingly fit the Hindley-Milner type inference style: sub-effecting is handled by adding additional polymorphic variables to effect rows $\{exn|\mu\}$.
     At the same time, rows should describe the whole needed computational context, which leads to excessive verbosity of higher-order function types.
     For example, a function in Koka that transforms a generator requires a significant amount of ceremonies to type-check:
     \begin{minted}{haskell}
