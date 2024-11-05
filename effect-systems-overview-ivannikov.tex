@@ -444,24 +444,37 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
           : List<T> => Unit at {console}
     \end{minted}
 
-    Boxing provides some degree of flexibility, however the result is still far from desired.
-    Specifically, without effect variables support boxed blocks cannot be composed.
-    Moreover, boxing on term level should be explicit and, to our knowledge, there is no developed box inference.
-%    \begin{minted}[escapeinside=##]{scala}
-%        def compose (f: B => C as {?}, g: A => B at {?}):
-%    \end{minted}
+    Boxing provides some flexibility as well as new restrictions.
+    Specifically, without explicit effect variables support, boxed values cannot be freely composed: one boxed value cannot be unboxed inside another since there is no way to describe that the second should inherit the first's capabilities.
+    So, the boxed value should be unboxed before capturing; however, unboxing performs capability checks, which are unnecessary for reboxing.
 
-    TODO disadvantages % todo
+    Much recent work in Scala language has investigated capture checking type systems that track for each value, which capabilities it captures~\cite{odersky2022scoped, boruch2023capturing}.
+    The proposed approach is better integrated with subtyping and does not separate first- and second-class values.
+    In the rest of the section, we will describe this approach.
+    Experimental implementation is already available in Scala\footnote{\url{https://docs.scala-lang.org/scala3/reference/experimental/cc.html}}.
+
+    We can ascribe every value of type \mintinline{scala}|T| with the type of the form \mintinline{scala}|T^{cap}|, which indicates that this value is a capability and its use should be restricted.
+    Namely, it cannot be returned from functions, and generics cannot be instantiated with its type.
+    These values are like the second-class values described before, but the restriction of capability capturing is dropped: the type system accurately tracks capturing instead.
+    For example, lazy list may capture \texttt{file} and \texttt{service} capabilities:
+    \begin{minted}{scala}
+        LazyList.fromFile(file)
+                .map((line) => service.send(line))
+          : LazyList[Int]^{file, service}
+    \end{minted}
+
+    Since contextual polymorphism is supported, functional types are capabilities as well.
+    Specifically, \mintinline{scala}|=>| type is a syntactic sugar for \mintinline{scala}|->^{cap}| type (thin arrow is a type of pure functions).
+    So, impure functions can capture capabilities and should obey capability restrictions.
+
+    
 
 
 
 
 
 
-
-    TODO \cite{odersky2022scoped, boruch2023capturing} % todo
-
-    TODO currying % todo
+    TODO % todo
 
     % todo capability-based effect systems
 
