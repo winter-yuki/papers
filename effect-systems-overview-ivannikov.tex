@@ -43,11 +43,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \begin{abstract}
         Effect systems allow one to reason statically about program effects.
-        It is essential for building reliable software and clear code abstraction boundaries.
+        It helps a lot in building reliable software and clear code abstraction boundaries.
         However, proper effect system design is quite a challenging task.
         Only some mainstream programming languages adopt effect systems, and those attempts are considered too complicated or unusable.
 
-        At the same time, many recent papers propose quite promising approaches to building flexible, safe, and lightweight effect systems.
+        At the same time, many recent papers propose promising approaches to building flexible, safe, and lightweight effect systems.
         This paper aims to overview selected modern works on this topic to improve the awareness of practical programming language designers and implementors of most perspective solutions.
     \end{abstract}
 
@@ -59,12 +59,12 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     We start talking about effects from the opposite, discussing purity.
     The only observable result of a pure computation is a value.
-    A function is called pure if its result is the same for the same arguments, and its application is a pure computation.
+    A function is called pure if its result is the same for the same arguments and its application is a pure computation.
 
-    Programming with pure functions is usually considered a good practice because it enjoys a lot of useful properties.
+    Programming with pure functions is usually considered a good practice because it enjoys a lot of valuable properties.
     The composition of pure functions gives pure functions, code semantics appear clear, and type systems work well, providing partial specification, safety, and clarity of abstraction.
 
-    However, writing and supporting any non-trivial program using only pure computations is quite complicated.
+    However, writing and supporting any non-trivial program using only pure computations is complicated.
     No matter that even input/output can be modeled with explicit passing \mintinline{haskell}|World| value around~\cite{peyton1993imperative}:
 
     \begin{minted}{haskell}
@@ -80,7 +80,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Thus, a tool for managing complexity is necessary: something that takes responsibility for bookkeeping for programmers and sweeps unnecessary details under the carpet.
 
     Computational effects is such a tool.
-    Effects arise from the interaction of computation with a context, which is responsible for bookkeeping, while computation queries it directly without the many ceremonies pure code is full of.
+    Effects arise from the interaction of computation with a context, responsible for bookkeeping, while computation queries it directly without the many ceremonies pure code is full of.
     Such a context can be a language runtime system that provides OS services, mutable memory cells, advanced control mechanisms, etc.
     An effectful operation is a construct that performs an effect.
     For example, Haskell's monadic machinery and \mintinline{haskell}|do|-syntax allow to abstract over world passing:
@@ -94,7 +94,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     Some approaches allow programmers to define custom effects as a library code.
-    Namely, effect handlers are a promising effect model that proves itself beyond pure functional languages community~\cite{plotkin2013handling, chandrasekaran2018algebraic}.
+    Namely, effect handlers are a promising effect model that proves itself beyond the pure functional languages community~\cite{plotkin2013handling, chandrasekaran2018algebraic}.
 %    Example below demonstrates simple state effect implementation.
 
 %    \begin{minted}{haskell}
@@ -113,7 +113,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Moreover, effect handlers separate effect signatures and implementation, making the effects' nature more apparent.
     Expressions can be seen as clients that either are evaluated to pure result or to request to the server (execution context, effect handler)~\cite{kiselyov2013extensible}.
     The server processes the request and resumes expression evaluation with the result of the effectful operation.
-    The handler defines a scope in which specific effectful operations are possible; it interprets them to be the pure value and effects of the enclosing scope.
+    The handler defines a scope in which specific effectful operations are possible; it interprets them as the pure value and effects of the enclosing scope.
     For example, the handler of the state effect receives a computation that can perform state operations and produces a computation that does not require state effect anymore:
     \begin{minted}{haskell}
         handleState :: Eff (State s :+: effs) a
@@ -127,19 +127,18 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 %    \end{itemize}
 
     Custom effects are a tool for creating embedded domain-specific languages (eDSL).
-    For example, one could define a coroutine effect that implements a specific scheduling strategy and then use it as if the coroutine feature were built in a the host language itself~\cite{leijen2017structured}.
+    For example, one could define a coroutine effect that implements a specific scheduling strategy and then use it as if the coroutine feature were built in a host language itself~\cite{leijen2017structured}.
     A host language could only support custom effects when all other features are implemented as eDSL libraries.
     Different effect models compete in expressiveness and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, schrijvers2019monad, van2024framework}.
 
     Effects are all about implicitness on a term level, which is why they can be so difficult to reason about.
-    At the same time, real-world programs are full of effects, so static control of their use is crucial, as well as some degree of explicitness, e.g., \ in function signatures.
-    Specifically, we should be able to be sure that every exception is handled somewhere, and every function, mutating external state, declares that explicitly.
-
+    At the same time, real-world programs are full of effects, so static control of their use and some degree of explicitness, e.g.,\ in function signatures, is crucial.
+    Specifically, we should be able to ensure that every exception is handled somewhere and that every function, mutating external state, declares that explicitly.
     \begin{minted}{haskell}
         f :: Int -> Eff (State Int) Int
     \end{minted}
 
-    Without an effect system, defining clear functional abstractions in impure languages is not straightforward because implementation details leak unnoticed as context interactions.
+    Defining clear functional abstractions in impure languages without an effect system is not straightforward because implementation details leak unnoticed as context interactions.
 
 
     \section{Effect systems in general}
@@ -508,12 +507,16 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Users need to carry the syntactic burden only when leaking something out of scope; otherwise, capability inference should do the job.
     However, average programmers are generally not familiar with dependent types, which may complicate the adoption of this feature.
 
+    TODO implicits % todo
+
     In conclusion, capabilities offer a simple way of reasoning about effects as about special objects passed from outside.
     Context polymorphism allows to omit effect tracking ceremonies for simple cases.
     At the same time, establishing safety is non-trivial and requires class separation of values or dependent types.
 
 
     \section{Modal effect types} \label{sec:modal}
+
+
 
     TODO \cite{convent2020doo}\cite{tang2024modal}
 
@@ -535,6 +538,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     % todo acknoledgement
 
 
+    % https://stackoverflow.com/questions/2149854/how-to-manually-equalize-columns-in-an-ieee-paper-if-using-bibtex
     \bibliographystyle{ieeetran}
     \bibliography{bib}
 
