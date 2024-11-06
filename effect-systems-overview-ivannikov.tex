@@ -230,6 +230,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Row-based systems} \label{sec:rows}
 
+    Most effect systems use row types to represent a pack of effects.
+    In this section, we consider conventional row-based effect systems, which differ from others by storing information about all functions' effects in row types.
+    Later, we will discuss systems that place only some information in row types.
+
+
     Row-based effect systems represent all effects of a function with a row of effect labels.
     Labels are the names of effects (the source language may allow many effect operations to have the same effect name), potentially applied to type arguments.
     Row type is an unordered pack of labels.
@@ -240,7 +245,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Higher-order functions produce at least the same effects as argument functions do.
     Row-based effect systems use row polymorphism to express it~\cite{gaster1996polymorphic}.
-    I.e., \ type variables can also stand for row types, and they can be spliced into other row types.
+    Type variables can also stand for row types and can be spliced into other row types.
     We use a vertical line to extend a row type by row type variable $\mu$:
     \begin{multline*}
         printMap : \forall \mu \ap a \ap b\ldotp (a \to^\mu b) \to list \ap a \to^{\{print|\mu\}} list \ap b
@@ -249,13 +254,13 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Ideally, every higher-order function should be parametrized over the effects of argument functions, which makes smooth migration to the effect system impossible and introduces significant code syntactic pollution, complicating the creation of code abstractions.
 
 
-    Checked exceptions in Java~\cite{gosling2000java} is a famous example of a row-based effect system.
+    Checked exceptions in Java~\cite{gosling2000java} are an example of a row-based effect system.
     Java statically verifies that all checked exceptions are caught.
     The programmer should either catch a checked exception or declare explicitly in a method signature that he propagates it to the call site.
 
-    Checked exceptions are a famously unliked feature of Java because they are highly under-designed and lack flexibility in lots of use cases~\cite{checked-exceptions}.
+    Checked exceptions are a famously unliked feature of Java because they are highly underdesigned and lack flexibility in many use cases~\cite{checked-exceptions}.
     For example, the exception row is an ad hoc construct, and the user cannot parametrize the function with it.
-    Thus, writing higher-order methods that propagate an arbitrary number of checked exceptions to the call site is impossible.
+    Thus, writing higher-order methods propagating an arbitrary number of checked exceptions to the call site is impossible.
 
     \begin{minted}{java}
         static <A, B, E extends Throwable> List<B>
@@ -267,46 +272,52 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
 
-    Many research languages are implementing row-based effect systems.
-    Some of them are overcomplicated in supporting external purity proofs and effect encapsulation.
-    For example, they use presence annotations on effect labels and presence polymorphism~\cite{hillerstrom2016liberating}.
-    We will use the effect system of the Koka language for illustrative purposes because it is simple yet powerful enough~\cite{leijen2014koka, leijen2017type}.
+    Many research languages are implementing conventional row-based effect systems.
+    At the same time, the necessity of subtyping and the effect negation mechanism (to subtract handled effects) usually leads to overcomplications when trying to fit a Hindley-Milner type inference style.
+    Specifically, the effect system of the Links language supports presence annotations and presence polymorphism, which describe whether a particular effect label should or should not be present in an effect row~\cite{hillerstrom2016liberating}.
+    We will focus on the Koka language effect system, which is simple yet powerful enough~\cite{leijen2014koka, leijen2017type}.
 
     Koka distinguishes duplicated effect labels in rows $\{l,l\}\neq \{l\}$, following the idea of scoped labels designed for record types~\cite{leijen2005extensible}.
     It allows Koka to achieve several goals at once.
-    In particular, effect elimination forms are straightforward: we discard \texttt{exn} in final effect \texttt{e} (Koka uses angle brackets after the function arrow for row types).
+    In particular, effect handling forms are straightforward: we discard \texttt{exn} in final effect \texttt{e}, while the handler is allowed to use exceptions as well since then the type of \texttt{f} can be inferred to \texttt{() -> <exn,exn|e'> a} (Koka uses angle brackets after the function arrow for row types).
     \begin{minted}{haskell}
         fun catch(f : () -> <exn|e> a,
                   h : err -> <|e> a) : <|e> a
     \end{minted}
 
-    TODO external purity % todo
-
-    Koka will prevent accidental handling by inferring the proper type that informs programmer that a particular effect will be handled.
-    At the same time, Koka provides \texttt{mask} operation to hide a particular effect from the innermost handler and, therefore, encapsulate this effect.
-    The type of \texttt{mask} is \texttt{(() -> <l|e> a) -> () -> <l,l|e> a}.
-    For example, the following function that transforms a generator hides handling of \texttt{yield} effect from function \texttt{f} (however, it is impossible to hide second \texttt{yield} from \texttt{g}):
+    Koka will prevent accidental handling by inferring the proper type, which informs the programmer that a particular effect will be handled.
+    At the same time, Koka provides a \texttt{mask} operation that hides a particular effect from the innermost handler and, therefore, encapsulates this effect.
+    The type of \texttt{mask} is \texttt{(() -> <|e> a) -> <l|e> a}.
+    In the following example, \texttt{exn} effect is masked for \texttt{f} invocation, so \texttt{f} does not contain it in type.
     \begin{minted}{haskell}
-        fun reyield(
-            f : (int) -> <|e> int,
-            g : () -> <yield,yield|e> ()
-        ) : <yield|e> ()
-          with ctl yield(x) // (1)
-            yield(mask<yield> { f(x) })
-            resume(())
-          g() // yield dispatches to (1)
+        fun test(f : () -> <|e> int) : <|e> int
+          catch(fn () mask<exn> { f() }, handle)
     \end{minted}
+
+    Finally, the Koka language's effect typing fits the Hindley-Milner type inference style.
+    Subtyping on row types is handled by adding additional polymorphic variables $\{exn|\mu\}$.
 
 
     Some methods allow the emulation of row types with other language features when not directly supported.
     Haskell \texttt{mtl} library\footnote{\url{https://hackage.haskell.org/package/mtl}} uses type class constraints to list effects~\cite{jones1995functional}.
     Since constraints are unordered and support subtyping, we can see them as ad-hoc row types.
     Effect handler libraries in Haskell also use type classes to express open unions similar to row-types~\cite{swierstra2008data}.
-    Another approach is to emulate row types with intersection types~\cite{xie2020row}, Scala ZIO\footnote{\url{https://zio.dev/}} library can be seen as a practical example of the idea.
+    Another approach is to emulate row types with intersection types~\cite{xie2020row}.
+    The Scala ZIO\footnote{\url{https://zio.dev/}} library can be seen as a practical example of the idea.
 
-    Row-based effect systems are the most straightforward approach, so new effectful languages usually choose it as a baseline.
-    Row types (Koka version~\cite{leijen2014koka, leijen2017type}) surprisingly fit the Hindley-Milner type inference style: sub-effecting is handled by adding additional polymorphic variables to effect rows $\{exn|\mu\}$.
-    At the same time, rows should describe the whole needed computational context, leading to excessive verbosity of higher-order function types (consider \texttt{reyield} example above).
+    Conventional row-based effect systems is the most straightforward approach, so new languages usually choose it as a baseline.
+    However, such effect systems track too much information, which leads to excessive verbosity.
+    For example, consider a function in Koka that transforms a generator:
+    \begin{minted}{haskell}
+        fun reyield(
+          f : (int) -> <yield|e> int,
+          g : () -> <yield,yield|e> ()
+        ) : <yield|e> ()
+          with handler ctl yield(x)
+            yield(f(x))
+            resume(())
+          g()
+    \end{minted}
 
 
     \section{Systems based on capabilities} \label{sec:capabilities}
