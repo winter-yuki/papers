@@ -37,7 +37,6 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     a.stoyan@hse.ru}
     }
 
-    % todo title
     \maketitle
 
 
@@ -220,7 +219,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     The first effect system was proposed to statically discover scheduling constraints in parallel programming for expressions with side effects~\cite{lucassen1988polymorphic}.
     They extended the type system with effect labels and regions (which describe the affected area of the store).
-    Later, Wadler and Thiemann showed~\cite{wadler2003marriage} that programming with monads~\cite{moggi1988computational} can subsume early effect systems like the one proposed by Lucassen and Gifford~\cite{lucassen1988polymorphic}.
+    Later, Wadler and Thiemann showed~\cite{wadler2003marriage} that programming with monads~\cite{moggi1988computational, wadler1995monads} can subsume early effect systems like the one proposed by Lucassen and Gifford~\cite{lucassen1988polymorphic}.
     We are not considering this branch of research because monads have proved to be a non-composable solution~\cite{liang1995monad, kiselyov2013extensible}, and they are not necessarily needed to model effects in call-by-value languages.
 
     Many advanced effect systems have been proposed and implemented in the literature.
@@ -534,13 +533,68 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \section{Modal effect types} \label{sec:modal}
 
+    Capabilities offered us a way to describe only parts of the ambient computational context: only capabilities directly required by a computation were explicated.
+    The main difficulty was tracking implicitly captured capabilities, where all approaches were too restrictive or required dependent types.
+    In this section, we will discuss an effect system that still tries to explicate as few parts of the computational context as possible while remaining fully on the type level.
 
+    Originally, Frank language proposed abilities and adjustments, second-class constructs that serve as a syntactic sugar for row polymorphism~\cite{lindley2017do, convent2020doo}.
+    Later, a standalone modal effect system was proposed, making novel constructs first-class rather than ad-hoc~\cite{tang2024modal}.
+    It follows the idea to use contextual modal type theory to track algebraic effects~\cite{zyuzin2021contextual}.
+    The core insight in that modality type constructors should mark transitions between effect contexts, rather then repeating the full effect context.
 
-    TODO \cite{convent2020doo}\cite{tang2024modal}
+    Modal effect system uses several modality type constructors that describe parts of a computational context.
+    These type constructors are first-class: corresponding values can be stored in data structures and passed around freely.
+    The general idea is that we box computations and ascribe them with a particular modality type constructor describing the required computational context.
+    In an appropriate computational context, computations will be automatically unboxed and ready to use.
+    Modal effect types distinguish two different modalities.
 
-    % todo Contextual Modal Type Theory Nanevski 2008
+    Square brackets represent absolute modality type constructors.
+    They describe the whole effect context required by a computation.
+    A computation boxed by the absolute modality needs context that supports at least enumerated effects to be unboxed.
+    For example, \texttt{map} function does not place any restrictions to a context (and cannot be unboxed freely), but \texttt{gen} function requires \texttt{yield} effect:
+    \begin{minted}{haskell}
+        map : []((a -> b) -> List a -> List b)
 
-    % todo modal-based effect sytems
+        gen : [yield](List Int -> 1)
+        gen xs = map (fun x -> do yield x); ()
+    \end{minted}
+
+    Angle brackets represent relative modality type constructors.
+    They describe relative context requirements.
+    Boxed computation can use all effects provided by an ambient context and more.
+    For example, \texttt{asList} handles \texttt{yield} effect, so it receives a computation \texttt{m} that may perform \texttt{yield} effect among others and transfers it to the proper context where \texttt{yield} is supported.
+    We could use absolute modality here, but in this case, it would mean that a computation can only perform the \texttt{yield} effect.
+    \begin{minted}{haskell}
+        asList : <yield>(1 -> 1) -> List Int
+        asList m = handle m () with
+          return () -> []
+          yield x r -> x :: r ()
+    \end{minted}
+
+    Two constructs in a language are supposed to transform computational context.
+    Effect handlers add supported effects; masking subtracts effects.
+    Relative modalities track context transformations having general form \texttt{<L|D>}, where the left part is a row of masked effects and the right part is a row of effects that extend ambient context.
+    For example, consider a \texttt{filter} function that traverses a list, yields elements that satisfy a predicate, and then reconstructs a list.
+    Computation \texttt{p} under the \texttt{yield} handler of \texttt{asList} is assigned a type \texttt{<yield|>(Int -> Bool)} indicating context transfer.
+    To be able to unbox \texttt{p}, we need to subtract \texttt{yield} from the context using \texttt{mask}.
+    \begin{minted}{haskell}
+        filter : (Int -> Bool) -> List Int -> List Int
+        filter p xs = asList (fun _ -> map (fun x ->
+          if mask<yield>(p x) then do yield x else ())
+          xs)
+    \end{minted}
+
+    There is a restriction that a value should be used in a context compatible with the one under which it was introduced (otherwise, the value will be boxed by relative modality).
+    However, we did not use masking for \texttt{xs}.
+    It is because there is a kind system that checks whether a value is a computation that relative modalities should track.
+    If not, it can freely pass context boundaries without being boxed.
+
+    The resulting system is expressive enough to encode programs from conventional row-based effect systems as long as effect variables on function arrows always refer to the lexically closest one.
+    At the same time, adding effect variables support, e.g., to express higher-order effects~\cite{wu2014effect}, is possible.
+
+    In conclusion, the modal effect system features great expressiveness even without explicit effect polymorphism.
+    It still requires a lot of explicit annotations from users, i.e.,\ boxing, masking, and freezing~\cite{emrich2020freezeml}.
+    The kind system overcomplicates the situation as well.
 
 
     \section{Conclusion}
@@ -553,12 +607,10 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     We hope that effect systems will achieve the needed simplicity and reduce the number of auxiliary ceremonies required for adoption in mainstream programming languages.
 
 
-%    \section*{Acknowledgment}
-%
-%    We thank Mikhail Belyaev, Denis Moskvin and Sergey Kovaltsov for the discussion and helpful comments.
-%    Also, we are grateful to Huawei Corporation for funding this work.
+    \section*{Acknowledgment}
 
-    % todo acknoledgement
+    We thank Sergey Kovaltsov, Mikhail Belyaev and Denis Moskvin for the discussion and helpful comments.
+    Also, we are grateful to Huawei Corporation for funding this work.
 
 
     % https://stackoverflow.com/questions/2149854/how-to-manually-equalize-columns-in-an-ieee-paper-if-using-bibtex
