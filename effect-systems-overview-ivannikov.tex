@@ -95,7 +95,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     Some approaches allow programmers to define custom effects as a library code.
-    Namely, effect handlers are a promising effect model that proves itself beyond the pure functional languages community~\cite{plotkin2013handling, chandrasekaran2018algebraic}.
+    Namely, effect handlers is a promising effect model that proves itself beyond the pure functional languages community~\cite{plotkin2013handling, chandrasekaran2018algebraic}.
 %    Example below demonstrates simple state effect implementation.
 
 %    \begin{minted}{haskell}
@@ -133,7 +133,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Different effect models compete in expressiveness and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, schrijvers2019monad, van2024framework}.
 
     Effects are all about implicitness on a term level, which is why they can be so difficult to reason about.
-    At the same time, real-world programs are full of effects, so static control of their use and some degree of explicitness, e.g.,\ in function signatures, is crucial.
+    At the same time, real-world programs are full of effects, so static control of their use and some degree of explicitness, e.g.,\ in function signatures, are required.
     Specifically, we should be able to ensure that every exception is handled somewhere and that every function, mutating external state, declares that explicitly.
     \begin{minted}{haskell}
         f :: Int -> Eff (State Int) Int
@@ -147,7 +147,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     In this section, we will describe the basic idea behind all effect systems and outline their core properties to describe and compare different effect systems later.
     Finally, we sketch the main challenges of effect systems design and conclude with brief historical notes.
 
-    To explain general ideas, we will use informal notation based on System F, which we will extend with the needed constructs.
+    To explain general ideas, we use an informal notation based on System F, extending it with the necessary constructs.
     We will explain these constructs along the way.
 
     We consider only call-by-value languages because call-by-name languages are less widespread, and results of interest can usually be adapted to a monadic setting~\cite{wadler2003marriage}.
@@ -180,7 +180,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Specifically, every exception should be caught, or generally, every effect should be handled.
     Safety implies that the type system should never forget effects: if a function may perform some effect, it should be mentioned in the function's type.
 
-    Another important property is the existence of effect encapsulation means~\cite{lindley2018encapsulating}.
+    Another important property is the existence of means for effect encapsulation~\cite{lindley2018encapsulating}.
     Imagine a higher-order function that throws and catches exceptions for its internal purposes.
     Without an effect system, such a function can catch exceptions from parameter function invocation while the user expects them to be propagated to the call site (nothing made him think the other way).
     For example, the following Scala function will silently intercept \mintinline{scala}|FileException| thrown in \texttt{f}.
