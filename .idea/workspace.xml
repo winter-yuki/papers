@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15554d1e-d56c-434a-97ac-1758983892bd" name="Changes" comment="Update">
+    <list default="true" id="15554d1e-d56c-434a-97ac-1758983892bd" name="Changes" comment="Fix Sergey">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bib.bib" beforeDir="false" afterPath="$PROJECT_DIR$/bib.bib" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" beforeDir="false" afterPath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -357,7 +358,79 @@
       <option name="project" value="LOCAL" />
       <updated>1730843726864</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="Cleanup first part">
+      <option name="closed" value="true" />
+      <created>1730896934740</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1730896934740</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Cleanup second part">
+      <option name="closed" value="true" />
+      <created>1730899748523</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1730899748524</updated>
+    </task>
+    <task id="LOCAL-00038" summary="Cleanup third part">
+      <option name="closed" value="true" />
+      <created>1730911903641</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1730911903641</updated>
+    </task>
+    <task id="LOCAL-00039" summary="Cleanup third part">
+      <option name="closed" value="true" />
+      <created>1730924323179</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1730924323179</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Cleanup forth part">
+      <option name="closed" value="true" />
+      <created>1730926308718</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1730926308718</updated>
+    </task>
+    <task id="LOCAL-00041" summary="Add conclusion">
+      <option name="closed" value="true" />
+      <created>1730992438942</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1730992438942</updated>
+    </task>
+    <task id="LOCAL-00042" summary="Add modal effect types">
+      <option name="closed" value="true" />
+      <created>1731004921071</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1731004921071</updated>
+    </task>
+    <task id="LOCAL-00043" summary="Remove author">
+      <option name="closed" value="true" />
+      <created>1731005183243</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1731005183243</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Fix Sergey">
+      <option name="closed" value="true" />
+      <created>1731007445459</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1731007445460</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -365,8 +438,15 @@
     <MESSAGE value="update" />
     <MESSAGE value="Fix comments iteration 1" />
     <MESSAGE value="Apply Grammarly" />
-    <MESSAGE value="Fix Sergey" />
     <MESSAGE value="Update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update" />
+    <MESSAGE value="Cleanup first part" />
+    <MESSAGE value="Cleanup second part" />
+    <MESSAGE value="Cleanup third part" />
+    <MESSAGE value="Cleanup forth part" />
+    <MESSAGE value="Add conclusion" />
+    <MESSAGE value="Add modal effect types" />
+    <MESSAGE value="Remove author" />
+    <MESSAGE value="Fix Sergey" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix Sergey" />
   </component>
 </project>

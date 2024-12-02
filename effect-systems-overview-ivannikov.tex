@@ -30,13 +30,12 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 %    \thanks{Identify applicable funding agency here. If none, delete this.}
     }
 
-%    \author{\IEEEauthorblockN{Andrey Stoyan}
-%    \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-%    \textit{name of organization (of Aff.)}\\
-%    Saint Petersburg, Russia \\
-%    a.stoyan@hse.ru}
-%    }
-
+    \author{\IEEEauthorblockN{Andrey Stoyan}
+    \IEEEauthorblockA{\textit{Informatics Department} \\
+    \textit{National Research University Higher School of Economics}\\
+    Saint Petersburg, Russian Federation \\
+    a.stoyan@hse.ru}
+    }
 
 
     \maketitle
@@ -141,13 +140,15 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Defining clear functional abstractions in impure languages without an effect system is not straightforward because implementation details leak unnoticed as context interactions.
 
+    % todo
+
 
     \section{Effect systems in general}
 
     In this section, we will describe the basic idea behind all effect systems and outline their core properties to describe and compare different effect systems later.
     Finally, we sketch the main challenges of effect systems design and conclude with brief historical notes.
 
-    To explain general ideas, we use an informal notation based on System F, extending it with the necessary constructs.
+    To explain general ideas, we use an informal notation based on System F~\cite{girard1971extension}, extending it with the necessary constructs.
     We will explain these constructs along the way.
 
     We consider only call-by-value languages because call-by-name languages are less widespread, and results of interest can usually be adapted to a monadic setting~\cite{wadler2003marriage}.
@@ -159,7 +160,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
     However, as discussed before, more than tracking the pure aspect of computations is required.
-    We would also like to track what function goes when running, how it interacts with the execution context, and what effects it might perform.
+    We would also like to track what function goes when running and how it interacts with the execution context, i.e., what effects it might perform.
     Since functions are the only unevaluated computations in call-by-value language, carrying information about effects with arrow type is natural.
     For example, we can attach an effect label to the arrow itself.
     We will see different concrete solutions for syntax and semantics of effect types.
@@ -274,7 +275,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 
     Many research languages are implementing conventional row-based effect systems.
-    At the same time, the necessity of subtyping and the effect negation mechanism (to subtract handled effects) usually leads to overcomplications when trying to fit a Hindley-Milner type inference style.
+    At the same time, the necessity of subtyping and the effect negation mechanism (to subtract handled effects) usually leads to overcomplications when trying to fit a Hindley-Milner type inference style~\cite{hindley1969principal, milner1978theory}.
     Specifically, the effect system of the Links language supports presence annotations and presence polymorphism, which describe whether a particular effect label should or should not be present in an effect row~\cite{hillerstrom2016liberating}.
     We will focus on the Koka language effect system, which is simple yet powerful enough~\cite{leijen2014koka, leijen2017type}.
 
@@ -609,10 +610,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     We hope that effect systems will achieve the needed simplicity and reduce the number of auxiliary ceremonies required for adoption in mainstream programming languages.
 
 
-%    \section*{Acknowledgment}
-%
-%    We thank Sergey Kovaltsov, Mikhail Belyaev and Denis Moskvin for the discussion and helpful comments.
-%    Also, we are grateful to Huawei Corporation for funding this work.
+    \section*{Acknowledgment}
+
+    We would like to thank Sergey Kovaltsov, Mikhail Belyaev,  Denis Moskvin for the helpful discussion and the anonymous reviewers for their constructive feedback.
 
 
     % https://stackoverflow.com/questions/2149854/how-to-manually-equalize-columns-in-an-ieee-paper-if-using-bibtex
