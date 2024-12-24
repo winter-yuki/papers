@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15554d1e-d56c-434a-97ac-1758983892bd" name="Changes" comment="Fix Sergey">
+    <list default="true" id="15554d1e-d56c-434a-97ac-1758983892bd" name="Changes" comment="Fix feedback">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bib.bib" beforeDir="false" afterPath="$PROJECT_DIR$/bib.bib" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" beforeDir="false" afterPath="$PROJECT_DIR$/effect-systems-overview-ivannikov.tex" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -430,7 +429,31 @@
       <option name="project" value="LOCAL" />
       <updated>1731007445460</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="Update">
+      <option name="closed" value="true" />
+      <created>1733147791553</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1733147791553</updated>
+    </task>
+    <task id="LOCAL-00046" summary="Fix feedback">
+      <option name="closed" value="true" />
+      <created>1735048717157</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1735048717157</updated>
+    </task>
+    <task id="LOCAL-00047" summary="Fix feedback">
+      <option name="closed" value="true" />
+      <created>1735112923985</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1735112923985</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -438,7 +461,6 @@
     <MESSAGE value="update" />
     <MESSAGE value="Fix comments iteration 1" />
     <MESSAGE value="Apply Grammarly" />
-    <MESSAGE value="Update" />
     <MESSAGE value="Cleanup first part" />
     <MESSAGE value="Cleanup second part" />
     <MESSAGE value="Cleanup third part" />
@@ -447,6 +469,8 @@
     <MESSAGE value="Add modal effect types" />
     <MESSAGE value="Remove author" />
     <MESSAGE value="Fix Sergey" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix Sergey" />
+    <MESSAGE value="Update" />
+    <MESSAGE value="Fix feedback" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix feedback" />
   </component>
 </project>
