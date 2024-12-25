@@ -545,7 +545,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Capabilities offered us a way to describe only parts of the ambient computational context: only capabilities directly required by a computation were explicated.
     The main difficulty was tracking implicitly captured capabilities, where all approaches were too restrictive or required dependent types.
-    In this section, we will discuss an effect system that still tries to explicate as few parts of the computational context as possible while remaining fully on the type level.
+    In this section, we will discuss an effect system that still tries to explicate as few parts of an execution context as possible while remaining fully on the type level.
 
     Originally, Frank language proposed abilities and adjustments, second-class constructs that serve as a syntactic sugar for row polymorphism~\cite{lindley2017do, convent2020doo}.
     Later, a standalone modal effect system was proposed, making novel constructs first-class rather than ad-hoc~\cite{tang2024modal}.
@@ -570,7 +570,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     The relative modality type constructor is represented by angle brackets.
     It describes relative context requirements.
-    Boxed computation can use all effects provided by an ambient context as well as listed in type.
+    Boxed computation can use all the effects provided by an ambient context as well as listed in type.
     For example, \texttt{asList} handles \texttt{yield} effect, so it receives a computation \texttt{m} that may perform \texttt{yield} effect among others and transfers it to the proper context where \texttt{yield} is supported.
     We could use absolute modality here, but in this case, it would mean that a computation can only perform the \texttt{yield} effect.
     \begin{minted}{haskell}
@@ -580,7 +580,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
           yield x r -> x :: r ()
     \end{minted}
 
-    Two constructs in a language are supposed to transform computational context.
+    Two constructs in the language are supposed to transform computational context.
     Effect handlers add supported effects; masking subtracts effects.
     Relative modalities track context transformations having general form \texttt{<L|R>}, where the left part is a row of masked effects and the right part is a row of effects that extend an ambient context.
 
