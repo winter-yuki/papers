@@ -61,11 +61,11 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     The only observable result of a pure computation is a value.
     A function is called pure if its result is the same for the same arguments and its application is a pure computation.
 
-    Programming with pure functions is usually considered a good practice because it enjoys a lot of valuable properties.
+    Programming with pure functions is usually considered a good practice because it enjoys lots of valuable properties.
     The composition of pure functions gives pure functions, code semantics appear clear, and type systems work well, providing partial specification, safety, and clarity of abstraction.
 
     However, writing and supporting any non-trivial program using only pure computations is complicated.
-    No matter that even input/output can be modeled with explicit passing \mintinline{haskell}|World| value around~\cite{peyton1993imperative}:
+    Regardless of that even input/output can be modeled with explicit passing \mintinline{haskell}|World| value around~\cite{peyton1993imperative}:
 
     \begin{minted}{haskell}
         getList :: Int -> World -> (World, [Int])
@@ -80,7 +80,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Thus, a tool for managing complexity is necessary: something that sweeps unimportant details under the carpet.
 
     Computational effects is such a tool.
-    An effect is an interaction of a computation with a context responsible for bookkeeping; a computation queries it directly without the many ceremonies that pure code is full of.
+    An effect is an interaction of a computation with an execution context responsible for bookkeeping; a computation queries it directly without the many ceremonies that pure code is full of.
     A context can be a language runtime system that provides OS services, mutable memory cells, advanced control mechanisms, input/output, etc.
     An effectful operation is a construct that performs an effect.
     For example, Haskell's monadic machinery and \mintinline{haskell}|do|-syntax allow to abstract over world passing:
@@ -93,7 +93,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
           fmap (x :) (getList (n - 1))
     \end{minted}
 
-    Some approaches allow programmers to define custom effects and effect contexts as library code.
+    Some approaches allow programmers to define custom effects and execution contexts as library code.
     Namely, effect handlers is a promising effect model that proves itself beyond the pure functional languages community~\cite{plotkin2013handling, chandrasekaran2018algebraic}.
 %    Example below demonstrates simple state effect implementation.
 
@@ -127,13 +127,13 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 %    \end{itemize}
 
     Custom effects are a tool for creating embedded domain-specific languages (eDSL).
-    For example, one could define a coroutine effect that implements a specific scheduling strategy and then use it as if the coroutine feature were built in a host language itself~\cite{leijen2017structured}.
+    For example, one could define a coroutine effect that implements a specific scheduling strategy and then use it as if the coroutine feature was built in a host language itself~\cite{leijen2017structured}.
     A host language could only support custom effects when all other features are implemented as eDSL libraries.
     Various effect models compete in expressiveness, performance, and ease of composing different effects together, defined separately~\cite{liang1995monad, kiselyov2013extensible, schrijvers2019monad, van2024framework}.
 
     The use of many effectful operations is valid only in a limited scope.
     For example, an exception can be thrown (effect performed) only in the context of the corresponding handler.
-    A mutable memory cell can be allocated on the stack, and nobody should refer to it after the end of the function execution. % todo different example?
+    A mutable memory cell can be allocated on the stack, and nobody should refer to it after the end of the function execution.
     Static control over the use of such operations can prevent many errors in the runtime, increasing the program's reliability.
 
     Effects are all about implicitness on the term level, which is why they can be so challenging to reason about.
@@ -162,7 +162,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \[\lambda x\ldotp x + 1 : nat\to nat\]
 
     However, as discussed before, more than tracking the pure aspect of computations is required.
-    We would also like to track what function goes when running and how it interacts with an execution context, i.e., what effects it might perform.
+    We would also like to track what function does when running and how it interacts with an execution context, i.e., what effects it might perform.
 %    Since functions are the only unevaluated computations in call-by-value language, carrying information about effects with arrow type is natural.
     For example, we can attach an effect label to the arrow itself:
 %    We will see different concrete solutions for syntax and semantics of effect types later.
@@ -186,7 +186,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     \textbf{Effect negation}.
     An effect system should provide a way to prove the external purity of a computation.
-    Namely, some effects are used inside and do not affect externally observable behavior, so computation is pure concerning such effects.
+    Namely, some effects are used inside and do not affect externally observable behavior, so computation is pure considering such effects.
     At the same time, some other effects may still be observable from the outside, so an effect system should preserve them.
     For example, the following function in the Koka language~\cite{leijen2014koka, leijen2017type} catches exceptions of provided computation, propagating other effects unchanged (we will discuss the syntax later):
     \[catch : \forall \mu\ap a\ldotp (unit\to^{\{exn|\mu\}} a, exception \to^{\mu} a) \to^\mu a\]
@@ -252,7 +252,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \lambda xs\ldotp map \ap (\lambda x\ldotp print\ap x\seq yield\ap x) \ap xs \\ : list\ap nat \to^{\{print, ~yield \ap nat\}} list \ap unit
     \end{multline*}
 
-    Higher-order functions produce at least the same effects as argument functions do.
+    Higher-order functions produce at least the same effects as functions argument do.
     Row-based effect systems use row polymorphism to express it~\cite{gaster1996polymorphic}.
     Type variables can also stand for row types and can be spliced into other row types.
     We use a vertical line to extend a row type by row type variable $\mu$:
@@ -260,7 +260,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         printMap : \forall \mu \ap a \ap b\ldotp (a \to^\mu b) \to list \ap a \to^{\{print|\mu\}} list \ap b
     \end{multline*}
 
-    Ideally, every higher-order function should be parametrized over the effects of argument functions, which makes smooth migration to the effect system impossible and introduces significant code syntactic pollution, complicating the creation of code abstractions.
+    Ideally, every higher-order function should be parametrized over the effects of functions argument, which makes smooth migration to the effect system impossible and introduces significant code syntactic pollution, complicating the creation of code abstractions.
 
 
     Checked exceptions in Java~\cite{gosling2000java} are an example of a row-based effect system.
@@ -446,7 +446,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     Note that in this setting, effect encapsulation works by default.
-    Effekt uses type-directed translation and will not provide capabilities to an argument function if it does not explicitly request them in type.
+    Effekt uses type-directed translation and will not provide capabilities to an function argument if it does not explicitly request them in type.
     So, explicit masking at the term level is not needed.
 
     With implicit capabilities, we worry not about the leak of capability objects themselves but delayed computations capturing capabilities.
