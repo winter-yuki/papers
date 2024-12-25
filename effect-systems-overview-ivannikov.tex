@@ -583,9 +583,12 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Two constructs in a language are supposed to transform computational context.
     Effect handlers add supported effects; masking subtracts effects.
     Relative modalities track context transformations having general form \texttt{<L|R>}, where the left part is a row of masked effects and the right part is a row of effects that extend an ambient context.
+
+    There is a rule that a variable should be used in a context compatible with the one under which it was bound.
+    The rule guarantees both effect safety and effect encapsulation.
     For example, consider a \texttt{filter} function that traverses a list, yields elements that satisfy a predicate, and then reconstructs a list.
-%    Computation \texttt{p} under the \texttt{yield} handler of \texttt{asList} is assigned an effect \texttt{yield} indicating a context transfer. % todo
-%    To be able to unbox \texttt{p}, we need to subtract \texttt{yield} from the context using \texttt{mask}.
+    Computation \texttt{p} is transferred under the handler of \texttt{asList}, i.e., to the different context.
+    To satisfy the rule, we need to subtract \texttt{yield} from the context using \texttt{mask}.
     \begin{minted}{haskell}
         filter : (Int -> Bool) -> List Int -> List Int
         filter p xs = asList (fun _ -> map (fun x ->
@@ -593,10 +596,9 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
           xs)
     \end{minted}
 
-    There is a restriction that a value should be used in a context compatible with the one under which it was introduced.
     However, we did not use masking for \texttt{xs}.
-    It is because there is a kind system that checks whether a value is a computation that relative modalities should track.
-    If not, it can freely pass context boundaries without being boxed.
+    It is because there is a kind system that checks whether a value is a computation.
+    If not, it can freely pass context boundaries.
 
     The resulting system is expressive enough to encode programs from conventional row-based effect systems as long as effect variables on function arrows always refer to the lexically closest one.
     At the same time, adding effect variables support, e.g., to express higher-order effects~\cite{wu2014effect}, is possible.
