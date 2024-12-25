@@ -337,7 +337,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     In this section, we will look at effects tracking from a different point of view.
     We assume that there are ``special'' objects in a program called capabilities.
-    Effects can be performed only through them, so the effect system can track such objects instead of the effectful operations.
+    Effects can be performed only through them, so an effect system can track such objects instead of the effectful operations.
     Capabilities can be seen as permissions, given by the context, to perform particular effects.
     For example, $console$ capability provides us a printing ability (we use syntax with dot to use a capability):
     \[\lambda x\ldotp \underline{console}.print\ap x\seq x + 1 : nat \to^{\{console\}} nat\]
@@ -349,10 +349,10 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     We can desugar the code with an explicit parameter instead of an effect type:
     \[\lambda \underline{console} \ap x \ldotp console.print\ap x\seq x + 1 : Console \to nat \to nat\]
 
-    The explicit passing of capabilities as function arguments will be messy (which is precisely the problem we are trying to solve with effects).
-    So language should provide some implicit parameter-passing support.
+    Explicit passing of capabilities as function arguments will be messy (which is precisely the problem we are trying to solve with effects).
+    So, a language should provide some implicit parameter-passing support.
     In this perspective, we can see effect systems as a tool for tracking free, dynamically bound variables~\cite{odersky2022scoped}.
-    This view complements the picture: the type system controls bounded variables, while the effect system tracks free ones.
+    This view complements the picture: a type system controls bounded variables, while an effect system tracks free ones.
 
     Furthermore, a function can receive capabilities as being captured by first-class functions.
     This way, capabilities offer a lightweight alternative to classical effect polymorphism called contextual effect polymorphism~\cite{brachthauser2022effects}.
@@ -425,7 +425,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     This approach is quite inflexible.
     Imagine a curried map function that is popular for building data processing pipelines.
-    There is no way to work with capabilities in this settings, since curried function will try to return a second class function.
+    There is no way to work with capabilities in this settings, since a curried function will try to return a second class function.
     Problems arise with inheritance as well, e.g.,\ it is non-trivial to make a unified interface for lazy and eager collections~\cite{osvald2016gentrification}.
 
     Capabilities should not necessarily be explicit values.
@@ -446,7 +446,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     \end{minted}
 
     Note that in this setting, effect encapsulation works by default.
-    Effekt uses type-directed translation and will not provide capabilities to the argument function if it does not explicitly require them in type.
+    Effekt uses type-directed translation and will not provide capabilities to an argument function if it does not explicitly request them in type.
     So, explicit masking at the term level is not needed.
 
     With implicit capabilities, we worry not about the leak of capability objects themselves but delayed computations capturing capabilities.
@@ -465,7 +465,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         \infer[BoxElim]{\Gamma \vdash \mathbf{unbox}\ap e : \sigma ~|~ C}{\Gamma \vdash e : \sigma ~\mathbf{at}~C ~|~ \{\}}
     \end{gather*}
 
-    Since types of boxed values again list all effects, some form of effect polymorphism should be supported. % todo
+    Since types of boxed values again list all effects, some form of effect polymorphism should be supported.
     Therefore, Effekt features capability polymorphism, which expresses that a boxed value closes over the same capabilities captured by a particular value~\cite{brachthauser2022effects}.
     To do this, Effekt turned to explicit capability passing and tracking capability objects by references instead of by types.
     For example, now it is possible to write down a curried \texttt{map} function that returns a boxed block, capturing \texttt{f}, and, transitively, all capabilities captured by \texttt{f}.
@@ -480,14 +480,14 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
     Boxing provides some flexibility as well as new restrictions.
     Specifically, without explicit effect variables support, boxed values cannot be freely composed: one boxed value cannot be unboxed inside another since there is no way to describe on type level that the second should inherit the first's capabilities.
-    So, the boxed value should be unboxed before capturing; however, unboxing performs capability checks, which are unnecessary for reboxing.
+    So, a boxed value should be unboxed before capturing; however, unboxing performs capability checks, which are unnecessary for reboxing.
 
     Much recent work in Scala language has investigated capture checking type systems that track for each value, which capabilities it captures~\cite{odersky2022scoped, boruch2023capturing}.
     The proposed approach is better integrated with subtyping and does not separate first- and second-class values so strictly.
     In the rest of the section, we will describe this approach.
     Experimental implementation is already available in Scala\footnote{\url{https://docs.scala-lang.org/scala3/reference/experimental/cc.html}}.
 
-    We can ascribe every value of type \mintinline{scala}|T| with the type of the form \mintinline{scala}|T^{cap}| (or \mintinline{scala}|T^| for short), which indicates that this value is a capability and its use should be restricted.
+    We can ascribe every value of type \mintinline{scala}|T| with a type of the form \mintinline{scala}|T^{cap}| (or \mintinline{scala}|T^| for short), which indicates that this value is a capability and its use should be restricted.
     Namely, it cannot be returned from functions, and generics cannot be instantiated with its type.
     These values are like the second-class values described before, but the restriction of capability capturing is dropped: the type system accurately tracks capturing instead.
     For example, lazy list may capture \texttt{file} and \texttt{service} capabilities:
@@ -506,7 +506,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
         def map[A,B](f: A => B): List[A] ->^{f} List[B]
     \end{minted}
 
-    Capabilities form subcapturing hierarchy: some capture sets can be safely used instead of others.
+    Capabilities form subcapturing hierarchy: one capture set can be safely used instead of others.
     $C_1 <: C_2$ if $C_1$ is covered by $C_2$.
     For instance, universal capability \mintinline{scala}|^{cap}| covers every other capability $C <: \{cap\}$; if some \mintinline{scala}|f| captures only capabilities \mintinline{scala}|c1| and \mintinline{scala}|c2|, then $\{f\} <: \{c1, c2\}$.
 
@@ -584,8 +584,8 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     Effect handlers add supported effects; masking subtracts effects.
     Relative modalities track context transformations having general form \texttt{<L|R>}, where the left part is a row of masked effects and the right part is a row of effects that extend an ambient context.
     For example, consider a \texttt{filter} function that traverses a list, yields elements that satisfy a predicate, and then reconstructs a list.
-    Computation \texttt{p} under the \texttt{yield} handler of \texttt{asList} is assigned a type \texttt{<yield|>(Int -> Bool)} indicating a context transfer. % todo
-    To be able to unbox \texttt{p}, we need to subtract \texttt{yield} from the context using \texttt{mask}.
+%    Computation \texttt{p} under the \texttt{yield} handler of \texttt{asList} is assigned an effect \texttt{yield} indicating a context transfer. % todo
+%    To be able to unbox \texttt{p}, we need to subtract \texttt{yield} from the context using \texttt{mask}.
     \begin{minted}{haskell}
         filter : (Int -> Bool) -> List Int -> List Int
         filter p xs = asList (fun _ -> map (fun x ->
@@ -593,7 +593,7 @@ T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
           xs)
     \end{minted}
 
-    There is a restriction that a value should be used in a context compatible with the one under which it was introduced (otherwise, the value will be boxed by relative modality). % todo
+    There is a restriction that a value should be used in a context compatible with the one under which it was introduced.
     However, we did not use masking for \texttt{xs}.
     It is because there is a kind system that checks whether a value is a computation that relative modalities should track.
     If not, it can freely pass context boundaries without being boxed.
